@@ -1,0 +1,49 @@
+#' Factor Interpreter for Bayesian Regression Models
+#'
+#' @docType package
+#' @name faintr-package
+#' @aliases faintr
+#'
+#' @description
+#' The \pkg{faintr} (FActorINTerpreteR) package provides convenience functions
+#' for evaluating Bayesian regression models for factorial designs, fitted with
+#' the \pkg{brms} package. The \pkg{faintr} package allows for the extraction of
+#' many meaningful comparisons irrespective of the encoding scheme initially used
+#' in the model.
+#'
+#' @details
+#' The package provides the following functions:
+#'
+#' \code{\link{get_cell_definitions}} returns information about the factors
+#' and their internal encoding scheme used in the regression model. It does
+#' so by extracting a minimal design matrix from the model.
+#'
+#' \code{\link{extract_cell_draws}} uses the cell definitions returned by
+#' \code{\link{get_cell_definitions}} to extract posterior draws based on
+#' a user-defined subset of factorial design cells. If no subset is passed,
+#' the function returns draws for the grand mean.
+#'
+#' \code{\link{compare_groups}} calls \code{\link{extract_cell_draws}} on
+#' two subsets of cells and returns summary statistics of the group comparison,
+#' such as the mean difference and its credible interval.
+#'
+#' For more information on how to use \pkg{faintr}, see \code{vignette("faintr_basics")}.
+#'
+#' @note
+#' The \pkg{faintr} package currently does not support multivariate models and
+#' models that use families \code{categorical}, \code{dirichlet}, \code{multinomial},
+#' and \code{logistic_normal}. Furthermore, models must not include special effect
+#' terms \code{mo()}, \code{mi()}, \code{me()}, and \code{cs()} for fixed effects.
+#' Also note that \pkg{faintr} currently does not support models where the intercept
+#' is a population-level parameter (class \code{b}), as is the case when using the
+#' \code{0 + Intercept} syntax in the \code{brm} function call.
+#'
+#' @references
+#' Bürkner, P.-C. (2017). brms: An R Package for Bayesian Multilevel Models
+#' Using Stan. \emph{Journal of Statistical Software}, \emph{80}(1), 1-28.
+#' \doi{10.18637/jss.v080.i01}
+#'
+#' @seealso
+#' \code{\link[brms]{brm}},
+#' \code{\link[brms]{brmsfit}}
+NULL

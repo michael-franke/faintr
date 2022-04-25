@@ -1,0 +1,39 @@
+Package: faintr
+Title: Factor Interpreter for Bayesian Regression Models
+Version: 0.0.0.9000
+Authors@R: person("Michael", "Franke", , "mchfranke@gmail.com", role = c("aut", "cre"))
+Description: The FActorINTerpreteR provides convenience functions for
+    evaluating Bayesian regression models for factorial designs, fitted
+    with the 'brms' package (Bürkner, 2017). It allows extracting information 
+    on the encoding scheme used in the model, extracting posterior draws
+    for a subset of design cells (irrespective of encoding scheme), as
+    well as comparing two subsets of design cells. References: Bürkner
+    (2017) <doi:10.18637/jss.v080.i01>.
+License: MIT + file LICENSE
+Language: en-US
+URL: https://github.com/michael-franke/faintr
+BugReports: https://github.com/michael-franke/faintr/issues
+Depends: 
+    R (>= 3.5.0)
+Imports: 
+    brms (>= 2.16.0),
+    dplyr (>= 1.0.0),
+    HDInterval (>= 0.1.2),
+    magrittr (>= 1.5),
+    posterior (>= 1.0.1),
+    rlang (>= 1.0.0),
+    stats,
+    tibble (>= 2.1.3)
+Suggests: 
+    ggplot2,
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0),
+    tidyr (>= 1.0.0)
+VignetteBuilder: 
+    knitr
+Config/testthat/edition: 3
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.2
