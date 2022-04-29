@@ -114,7 +114,7 @@ fit_brms_politeness <- brm(formula = pitch ~ gender * context + (1 | subject + s
 ```
 
 ```{r fit-dummy-sysdata, echo=FALSE}
-fit_brms_politeness <- faintr:::fit_brms_politeness
+fit_brms_politeness <- readRDS('models/fit_brms_politeness.rds')
 ```
 
 Let's look at the estimated coefficients:
@@ -295,7 +295,7 @@ fit_brms_politeness_sum <- brm(formula = pitch ~ gender * context + (1 | subject
 ```
 
 ```{r fit-sum-sysdata, echo=FALSE}
-fit_brms_politeness_sum <- faintr:::fit_brms_politeness_sum
+fit_brms_politeness_sum <- readRDS('models/fit_brms_politeness_sum.rds')
 ```
 
 A call to `get_cell_definitions` shows how our predictor variables are encoded in the newly fitted model:
@@ -345,7 +345,7 @@ fit_brms_politeness_sum_prior <- brm(formula = pitch ~ gender * context + (1 | s
 ```
 
 ```{r fit-sum-priors-sysdata, echo=FALSE}
-fit_brms_politeness_sum_prior <- faintr:::fit_brms_politeness_sum_prior
+fit_brms_politeness_sum_prior <- readRDS('models/fit_brms_politeness_sum_prior.rds')
 ```
 
 The priors we have chosen here translate into a prior belief that there is likely no difference between a given factor level and the grand mean. Since the data set is relatively small, the priors have a strong influence on the resulting posterior estimates:
