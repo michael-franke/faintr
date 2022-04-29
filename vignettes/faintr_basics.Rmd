@@ -69,16 +69,7 @@ library(ggplot2)
 library(HDInterval)
 ```
 
-Additionally, we can speed up the sampling process by using all available cores:
-
-```{r cpu-options, eval=FALSE}
-options(mc.cores = parallel::detectCores())
-```
-
 ```{r internal-setup, echo=FALSE}
-# CRAN only allows 2 cores max
-options(mc.cores = 2)
-
 theme_set(theme_bw() + theme(plot.background = element_blank()))
 
 custom_palette <- c("#00154f", "#c0904d", "#afa695", "#616247FF")
@@ -111,11 +102,19 @@ politeness %>%
 
 A Bayesian regression model for this data set, fitted in `brms`, might look as follows. The model regresses voice pitch against factors `gender` and `context` (with interaction) and includes by-participant and by-sentence random intercepts.
 
-```{r fit-dummy, results='hide'}
+```{r fit-dummy, eval=FALSE}
 fit_brms_politeness <- brm(formula = pitch ~ gender * context + (1 | subject + sentence),
                            data = politeness,
+                           chains = 2,
+                           iter = 500,
+                           control = list(adapt_delta = 0.99),
+                           cores = 2,
                            seed = 1234 # for reproducible results
                            )
+```
+
+```{r fit-dummy-sysdata, echo=FALSE}
+fit_brms_politeness <- faintr:::fit_brms_politeness
 ```
 
 Let's look at the estimated coefficients:
@@ -267,7 +266,7 @@ The `faintr` package also works for models with different contrast coding scheme
 
 To see this, here is a model with sum-coded predictor variables, all else equal to the case from before.
 
-```{r fit-sum, results='hide'}
+```{r fit-sum, eval=FALSE}
 # make predictors 'factors' because that's required for contrast coding
 #   also: change order to match coding assumed in the main text
 politeness_sum <- politeness %>% 
@@ -287,8 +286,16 @@ colnames(contrasts(politeness_sum$context)) <- ':pol'
 # run brm as usual
 fit_brms_politeness_sum <- brm(formula = pitch ~ gender * context + (1 | subject + sentence),
                                data = politeness_sum,
+                               chains = 2,
+                               iter = 500,
+                               control = list(adapt_delta = 0.99),
+                               cores = 2,
                                seed = 1234
                                )
+```
+
+```{r fit-sum-sysdata, echo=FALSE}
+fit_brms_politeness_sum <- faintr:::fit_brms_politeness_sum
 ```
 
 A call to `get_cell_definitions` shows how our predictor variables are encoded in the newly fitted model:
@@ -318,7 +325,7 @@ This is nearly identical (modulo sampling variation) to the results we obtained 
 
 For emphasis: If you fit a model with any prior structure on the model coefficients other than uniform/uninformative priors, it is not guaranteed that the results are the same for models with different contrast coding schemes. For illustration, consider the sum-coded model from before with a skeptical prior on coefficients `gender:M` and `context:pol`:
 
-```{r fit-sum-priors, results='hide'}
+```{r fit-sum-priors, eval=FALSE}
 # skeptical prior on fixed effects
 priors <- c(
   prior(normal(0, 10), coef = `gender:M`),
@@ -329,8 +336,16 @@ priors <- c(
 fit_brms_politeness_sum_prior <- brm(formula = pitch ~ gender * context + (1 | subject + sentence),
                                      data = politeness_sum,
                                      prior = priors,
+                                     chains = 2,
+                                     iter = 500,
+                                     control = list(adapt_delta = 0.99),
+                                     cores = 2,
                                      seed = 1234
                                      )
+```
+
+```{r fit-sum-priors-sysdata, echo=FALSE}
+fit_brms_politeness_sum_prior <- faintr:::fit_brms_politeness_sum_prior
 ```
 
 The priors we have chosen here translate into a prior belief that there is likely no difference between a given factor level and the grand mean. Since the data set is relatively small, the priors have a strong influence on the resulting posterior estimates:
