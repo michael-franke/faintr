@@ -1,0 +1,153 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, 
+  warning = FALSE,
+  message = FALSE, 
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+
+library(faintr)
+library(brms)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+theme_set(theme_bw() + theme(plot.background = element_blank()))
+
+custom_palette <- c("#009E73", "#B22222", "#0072B2", "#D55E00")
+
+scale_colour_discrete <- function(...) {
+  scale_colour_manual(..., values = custom_palette)
+}
+scale_fill_discrete <- function(...) {
+   scale_fill_manual(..., values = custom_palette)
+}
+```
+
+# faintr
+
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/michael-franke/faintr/workflows/R-CMD-check/badge.svg)](https://github.com/michael-franke/faintr/actions)
+[![Codecov test coverage](https://codecov.io/gh/michael-franke/faintr/branch/main/graph/badge.svg)](https://app.codecov.io/gh/michael-franke/faintr?branch=main)
+<!-- badges: end -->
+
+The **faintr** (FActorINTerpreteR) package provides convenience functions for 
+interpreting [brms](https://github.com/paul-buerkner/brms) model fits for data 
+from factorial designs. It allows for the extraction and comparison of posterior 
+draws for a given design cell, irrespective of the encoding scheme used in the model.
+
+Currently, **faintr** provides the following functions:
+
+* `get_cell_definitions` returns information on the models' predictor variables 
+and how they are encoded in the model.
+* `extract_cell_draws` returns posterior draws for one subset of design cells.
+* `compare_groups` returns summary statistics of comparing two subsets of design cells.
+
+## Installation
+
+You can install the development version from GitHub with:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("michael-franke/faintr")
+```
+
+## Examples
+
+In this section, we shortly introduce how to use the package. For a more detailed 
+overview, please refer to the vignette.
+
+We will use a preprocessed version of R's built-in Titanic data set:
+
+```{r data, echo=FALSE}
+data <- Titanic %>% as_tibble() %>% rename(Count = n)
+data_agg <- data %>% group_by(Class, Sex, Age) %>% summarize(Total = sum(Count))
+
+data <- full_join(data %>% filter(Survived == "Yes") %>% select(-Survived), 
+                  data_agg)
+
+data
+```
+The data set contains the following variables:
+
+* `Class`: Passenger class
+* `Sex`: Sex of the passenger
+* `Age`: Age group of the passenger
+* `Count`: Count of passengers who survived
+* `Total`: Total number of passengers
+
+Below, we regress the counts of passengers who survived as a function of their class, 
+sex, and age group using a Binomial logistic regression model fitted with `brms`:
+
+```{r model-fitting, results='hide'}
+fit <- brm(Count | trials(Total) ~ Class + Sex + Age,  
+           data = data, 
+           family = binomial(link = "logit"),
+           seed = 123)
+```
+
+```{r model-summary}
+summary(fit)
+```
+To obtain information on the factors and the encoding scheme used in the model, 
+we can use `get_cell_definitions`:
+
+```{r cell-defs}
+get_cell_definitions(fit)
+```
+
+The output reveals that we used dummy coding for factors `Class`, `Sex` and 
+`Age`, where `1st`, `Female`, and `Adult` are the reference levels, respectively.
+
+To obtain posterior draws for a specific design cell, we can use `extract_cell_definitions`. 
+For instance, draws for women in the 2nd class can be extracted like so:
+
+```{r cell-draws}
+extract_cell_draws(fit, Sex == "Female" & Class == "2nd" & Age == "Adult") %>% 
+  head()
+```
+Parameter `colname` allows changing the default column name in the output, which 
+facilitates post-processing of cell draws, e.g., for plotting or summary statistics. 
+Here, we extract the draws for each level of `Class` (averaged over `Sex` and `Age`) 
+and visualize the results:
+
+```{r plot}
+draws_1st  <- extract_cell_draws(fit, Class == "1st", colname = "1st")
+draws_2nd  <- extract_cell_draws(fit, Class == "2nd", colname = "2nd")
+draws_3rd  <- extract_cell_draws(fit, Class == "3rd", colname = "3rd")
+draws_crew <- extract_cell_draws(fit, Class == "Crew", colname = "Crew")
+
+draws_class <- tibble(draws_1st, draws_2nd, draws_3rd, draws_crew) %>% 
+  pivot_longer(cols = everything(), names_to = "class", values_to = "draws")
+
+draws_class %>% 
+  ggplot(aes(x = draws, color = class, fill = class)) +
+  geom_density(alpha = 0.4)
+```
+Finally, we can compare two subsets of design cells with `compare_groups`. Here,
+we compare the odds of surviving between female passengers in the first class with
+male passengers in all but the first class:
+
+```{r group-comp}
+compare_groups(fit, 
+               Sex == "Female" & Class == "1st",
+               Sex == "Male" & Class != "1st"
+               )
+```
+If one of two group specifications is left out, we compare against the grand mean:
+
+```{r group-comp_grand-mean}
+compare_groups(fit, 
+               Class == "Crew"
+               )
+```
+
