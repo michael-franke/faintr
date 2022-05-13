@@ -108,7 +108,7 @@ get_cell_definitions(fit)
 The output reveals that we used dummy coding for factors `Class`, `Sex` and 
 `Age`, where `1st`, `Female`, and `Adult` are the reference levels, respectively.
 
-To obtain posterior draws for a specific design cell, we can use `extract_cell_definitions`. 
+To obtain posterior draws for a specific design cell, we can use `extract_cell_draws`. 
 For instance, draws for women in the 2nd class can be extracted like so:
 
 ```{r cell-draws}
@@ -120,7 +120,7 @@ facilitates post-processing of cell draws, e.g., for plotting or summary statist
 Here, we extract the draws for each level of `Class` (averaged over `Sex` and `Age`) 
 and visualize the results:
 
-```{r plot}
+```{r plot, out.width="70%"}
 draws_1st  <- extract_cell_draws(fit, Class == "1st", colname = "1st")
 draws_2nd  <- extract_cell_draws(fit, Class == "2nd", colname = "2nd")
 draws_3rd  <- extract_cell_draws(fit, Class == "3rd", colname = "3rd")
@@ -133,8 +133,9 @@ draws_class %>%
   ggplot(aes(x = draws, color = class, fill = class)) +
   geom_density(alpha = 0.4)
 ```
+
 Finally, we can compare two subsets of design cells with `compare_groups`. Here,
-we compare the odds of surviving between female passengers in the first class with
+we compare the odds of surviving between female passengers in the first class and
 male passengers in all but the first class:
 
 ```{r group-comp}

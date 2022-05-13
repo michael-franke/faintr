@@ -135,8 +135,8 @@ and `Age`, where `1st`, `Female`, and `Adult` are the reference levels,
 respectively.
 
 To obtain posterior draws for a specific design cell, we can use
-`extract_cell_definitions`. For instance, draws for women in the 2nd
-class can be extracted like so:
+`extract_cell_draws`. For instance, draws for women in the 2nd class can
+be extracted like so:
 
 ``` r
 extract_cell_draws(fit, Sex == "Female" & Class == "2nd" & Age == "Adult") %>% 
@@ -170,10 +170,12 @@ draws_class %>%
   geom_density(alpha = 0.4)
 ```
 
-<img src="man/figures/README-plot-1.png" width="100%" /> Finally, we can
-compare two subsets of design cells with `compare_groups`. Here, we
-compare the odds of surviving between female passengers in the first
-class with male passengers in all but the first class:
+<img src="man/figures/README-plot-1.png" width="70%" />
+
+Finally, we can compare two subsets of design cells with
+`compare_groups`. Here, we compare the odds of surviving between female
+passengers in the first class and male passengers in all but the first
+class:
 
 ``` r
 compare_groups(fit, 
