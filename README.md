@@ -18,7 +18,7 @@ of the encoding scheme used in the model.
 
 Currently, **faintr** provides the following functions:
 
--   `get_cell_definitions` returns information on the models’ predictor
+-   `get_cell_definitions` returns information on the predictor
     variables and how they are encoded in the model.
 -   `extract_cell_draws` returns posterior draws for one subset of
     design cells.
@@ -135,8 +135,8 @@ and `Age`, where `1st`, `Female`, and `Adult` are the reference levels,
 respectively.
 
 To obtain posterior draws for a specific design cell, we can use
-`extract_cell_draws`. For instance, draws for women in the 2nd class can
-be extracted like so:
+`extract_cell_draws`. For instance, draws for women in the second class
+can be extracted like so:
 
 ``` r
 extract_cell_draws(fit, Sex == "Female" & Class == "2nd" & Age == "Adult") %>% 
