@@ -76,13 +76,13 @@
 </nav><div class="container template-home">
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
-<div class="page-header"><h1 id="faintr-">faintr <img align="right" src="reference/figures/faintr-logo.png" alt="logo" width="140"><a class="anchor" aria-label="anchor" href="#faintr-"></a>
+<div class="page-header"><h1 id="faintr-">faintr <img align="right" src="reference/figures/faintr-logo.png" alt="logo" width="160"><a class="anchor" aria-label="anchor" href="#faintr-"></a>
 </h1></div>
 <!-- badges: start -->
 <div class="section level2">
 <h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h2>
-<p>The <strong>faintr</strong> (FActorINTerpreteR) package provides convenience functions for interpreting <a href="https://github.com/paul-buerkner/brms" class="external-link">brms</a> model fits for data from factorial designs. It allows for the extraction and comparison of posterior draws for a given design cell, irrespective of the encoding scheme used in the model.</p>
+<p>The <strong>faintr</strong> (FActorINTerpreteR) package provides convenience functions for interpreting <a href="https://paul-buerkner.github.io/brms/" class="external-link"><strong>brms</strong></a> model fits for data from factorial designs. It allows for the extraction and comparison of posterior draws for a given design cell, irrespective of the encoding scheme used in the model.</p>
 <p>Currently, <strong>faintr</strong> provides the following functions:</p>
 <ul>
 <li>
@@ -104,7 +104,7 @@
 <div class="section level2">
 <h2 id="examples">Examples<a class="anchor" aria-label="anchor" href="#examples"></a>
 </h2>
-<p>In this section, we shortly introduce how to use the package. For a more detailed overview, please refer to the vignette.</p>
+<p>In this section, we shortly introduce how to use the package. For a more detailed overview, please refer to the <a href="https://michael-franke.github.io/faintr/articles/faintr_basics.html">vignette</a>.</p>
 <p>We will use a preprocessed version of R’s built-in Titanic data set:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="co">#&gt; # A tibble: 16 x 5</span></span>
 <span id="cb2-2"><a href="#cb2-2"></a><span class="co">#&gt;    Class Sex    Age   Count Total</span></span>
@@ -138,7 +138,7 @@
 <li>
 <code>Total</code>: Total number of passengers</li>
 </ul>
-<p>Below, we regress the counts of passengers who survived as a function of their class, sex, and age group using a Binomial logistic regression model fitted with <code>brms</code>:</p>
+<p>Below, we regress the counts of passengers who survived as a function of their class, sex, and age group using a Binomial logistic regression model fitted with <a href="https://paul-buerkner.github.io/brms/" class="external-link"><strong>brms</strong></a>:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">brm</span><span class="op">(</span><span class="va">Count</span> <span class="op">|</span> <span class="fu">trials</span><span class="op">(</span><span class="va">Total</span><span class="op">)</span> <span class="op">~</span> <span class="va">Class</span> <span class="op">+</span> <span class="va">Sex</span> <span class="op">+</span> <span class="va">Age</span>,  
            data <span class="op">=</span> <span class="va">data</span>, 
