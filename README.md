@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# faintr
+# faintr <img align="right" src="man/figures/faintr-logo.png" alt="logo" width=140>
 
 <!-- badges: start -->
 
@@ -9,6 +9,8 @@
 [![Codecov test
 coverage](https://codecov.io/gh/michael-franke/faintr/branch/main/graph/badge.svg)](https://app.codecov.io/gh/michael-franke/faintr?branch=main)
 <!-- badges: end -->
+
+## Overview
 
 The **faintr** (FActorINTerpreteR) package provides convenience
 functions for interpreting [brms](https://github.com/paul-buerkner/brms)

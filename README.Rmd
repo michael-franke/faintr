@@ -33,12 +33,14 @@ scale_fill_discrete <- function(...) {
 }
 ```
 
-# faintr
+# faintr <img align="right" src="man/figures/faintr-logo.png" alt="logo" width=140> 
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/michael-franke/faintr/workflows/R-CMD-check/badge.svg)](https://github.com/michael-franke/faintr/actions)
 [![Codecov test coverage](https://codecov.io/gh/michael-franke/faintr/branch/main/graph/badge.svg)](https://app.codecov.io/gh/michael-franke/faintr?branch=main)
 <!-- badges: end -->
+
+## Overview
 
 The **faintr** (FActorINTerpreteR) package provides convenience functions for 
 interpreting [brms](https://github.com/paul-buerkner/brms) model fits for data 
