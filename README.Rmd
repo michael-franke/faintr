@@ -33,7 +33,7 @@ scale_fill_discrete <- function(...) {
 }
 ```
 
-# faintr <img align="right" src="man/figures/faintr-logo.png" alt="logo" width=140> 
+# faintr <img align="right" src="man/figures/faintr-logo.png" alt="logo" width=160> 
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/michael-franke/faintr/workflows/R-CMD-check/badge.svg)](https://github.com/michael-franke/faintr/actions)
@@ -43,7 +43,7 @@ scale_fill_discrete <- function(...) {
 ## Overview
 
 The **faintr** (FActorINTerpreteR) package provides convenience functions for 
-interpreting [brms](https://github.com/paul-buerkner/brms) model fits for data 
+interpreting [**brms**](https://paul-buerkner.github.io/brms/) model fits for data 
 from factorial designs. It allows for the extraction and comparison of posterior 
 draws for a given design cell, irrespective of the encoding scheme used in the model.
 
@@ -66,7 +66,7 @@ devtools::install_github("michael-franke/faintr")
 ## Examples
 
 In this section, we shortly introduce how to use the package. For a more detailed 
-overview, please refer to the vignette.
+overview, please refer to the [vignette](https://michael-franke.github.io/faintr/articles/faintr_basics.html).
 
 We will use a preprocessed version of R's built-in Titanic data set:
 
@@ -88,7 +88,7 @@ The data set contains the following variables:
 * `Total`: Total number of passengers
 
 Below, we regress the counts of passengers who survived as a function of their class, 
-sex, and age group using a Binomial logistic regression model fitted with `brms`:
+sex, and age group using a Binomial logistic regression model fitted with [**brms**](https://paul-buerkner.github.io/brms/):
 
 ```{r model-fitting, results='hide'}
 fit <- brm(Count | trials(Total) ~ Class + Sex + Age,  
