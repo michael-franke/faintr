@@ -2,19 +2,18 @@ Package: faintr
 Title: Factor Interpreter for Bayesian Regression Models
 Version: 0.0.0.9000
 Authors@R: c(
-person("Özge"   , "Özenoglu"  , email = "oezgeoezenoglu@gmail.com" , role = c("aut", "cre")),
-person("Noa"    , "Kallioinen", email = "noa.kallioinen@aalto.fi"  , role = c("aut")),
-person("Michael", "Franke"    , email = "mchfranke@gmail.com"      , role = c("aut", "cre"))
-)
+    person("Özge", "Özenoglu", , "oezgeoezenoglu@gmail.com", role = "aut"),
+    person("Noa", "Kallioinen", , "noa.kallioinen@aalto.fi", role = "aut"),
+    person("Michael", "Franke", , "mchfranke@gmail.com", role = c("aut", "cre"))
+  )
 Description: The FActorINTerpreteR provides convenience functions for
     evaluating Bayesian regression models for factorial designs, fitted
-    with the 'brms' package (Bürkner, 2017). It allows extracting information 
-    on the encoding scheme used in the model, extracting posterior draws
-    for a subset of design cells (irrespective of encoding scheme), as
-    well as comparing two subsets of design cells. References: Bürkner
-    (2017) <doi:10.18637/jss.v080.i01>.
+    with the 'brms' package (Bürkner, 2017). It allows extracting
+    information on the encoding scheme used in the model, extracting
+    posterior draws for a subset of design cells (irrespective of encoding
+    scheme), as well as comparing two subsets of design cells. References:
+    Bürkner (2017) <doi:10.18637/jss.v080.i01>.
 License: MIT + file LICENSE
-Language: en-US
 URL: https://github.com/michael-franke/faintr
 BugReports: https://github.com/michael-franke/faintr/issues
 Depends: 
@@ -38,6 +37,7 @@ VignetteBuilder:
     knitr
 Config/testthat/edition: 3
 Encoding: UTF-8
+Language: en-US
 LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
