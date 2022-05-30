@@ -1,7 +1,11 @@
 Package: faintr
 Title: Factor Interpreter for Bayesian Regression Models
 Version: 0.0.0.9000
-Authors@R: person("Michael", "Franke", , "mchfranke@gmail.com", role = c("aut", "cre"))
+Authors@R: c(
+person("Özge"   , "Özenoglu"  , email = "oezgeoezenoglu@gmail.com" , role = c("aut", "cre")),
+person("Noa"    , "Kallioinen", email = "noa.kallioinen@aalto.fi"  , role = c("aut")),
+person("Michael", "Franke"    , email = "mchfranke@gmail.com"      , role = c("aut", "cre"))
+)
 Description: The FActorINTerpreteR provides convenience functions for
     evaluating Bayesian regression models for factorial designs, fitted
     with the 'brms' package (Bürkner, 2017). It allows extracting information 
