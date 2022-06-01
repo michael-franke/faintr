@@ -184,23 +184,23 @@ extract_cell_draws(fit_brms_politeness, gender != 'F' | context == 'inf') %>% he
 To extract posterior draws for only a part of the factors used in the model, we simply omit the unwanted factors in the group specification. Here we are interested in voice pitch in polite contexts, averaged over male and female speakers. Let's also set a more informative column name:
 
 ```{r cell-draws-dummy-main-effect}
-extract_cell_draws(fit_brms_politeness, context == 'pol', colname = 'context:pol') %>% head()
+extract_cell_draws(fit_brms_politeness, context == 'pol', colname = 'context:pol')
 ```
 
 Furthermore, we can extract posterior draws for the grand mean, i.e., the mean of all design cells together. We can do so by not specifying any group level in the function call:
 
 ```{r cell-draws-dummy-grand-mean}
-extract_cell_draws(fit_brms_politeness, colname = 'grand_mean') %>% head()
+extract_cell_draws(fit_brms_politeness, colname = 'grand_mean')
 ```
 
 We can use the output of `extract_cell_draws` for inspecting and comparing posterior draws visually:
 
 ```{r cell-draws-dummy-plot}
-draws_gender <- cbind(extract_cell_draws(fit_brms_politeness, gender == 'M', colname = 'male'),
+draws_gender <- posterior::bind_draws(extract_cell_draws(fit_brms_politeness, gender == 'M', colname = 'male'),
                       extract_cell_draws(fit_brms_politeness, gender == 'F', colname = 'female'))
 
 draws_gender %>% 
-  pivot_longer(cols = everything(), names_to = 'group', values_to = 'draws') %>% 
+  pivot_longer(cols = posterior::variables(.), names_to = 'group', values_to = 'draws') %>% 
   ggplot(aes(x = draws, color = group, fill = group)) +
   geom_density(alpha = .4)
 ```
