@@ -114,7 +114,7 @@ To obtain posterior draws for a specific design cell, we can use `extract_cell_d
 For instance, draws for women in the second class can be extracted like so:
 
 ```{r cell-draws}
-extract_cell_draws(fit, Sex == "Female" & Class == "2nd") %>% 
+extract_cell_draws(fit, Sex == "Female" & Class == "2nd" & Age == "Adult") %>% 
   head()
 ```
 Parameter `colname` allows changing the default column name in the output, which 
