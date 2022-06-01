@@ -1,3 +1,5 @@
+utils::globalVariables(".")
+
 #' Obtain information about factors in regression models
 #'
 #' This function takes a \code{\link[brms]{brms}} model fit for a
@@ -105,7 +107,7 @@ get_cell_definitions <- function(model) {
 #' extract_cell_draws(fit)
 #' }
 #'
-#' @importFrom rlang .data
+#' @importFrom rlang .data `:=`
 #'
 #' @export
 extract_cell_draws <- function(model, group, colname='draws') {
@@ -119,10 +121,10 @@ extract_cell_draws <- function(model, group, colname='draws') {
   fixef <- all.vars(brms::brmsterms(stats::formula(model))$dpars$mu$fe)
 
   # extract posterior draws
-  draws <- posterior::as_draws_df(as.data.frame(model))
+  draws <- posterior::as_draws_matrix(model)
 
   # extract coefficient names of fixed effects
-  coeff_names <- paste0('b_', as.data.frame(brms::standata(model)$X) %>% colnames())
+  coeff_names <- paste0('b_', brms::standata(model)$X %>% colnames())
 
   # re-extract minimal design matrix as matrix
   X <- design_matrix %>%
@@ -130,12 +132,16 @@ extract_cell_draws <- function(model, group, colname='draws') {
     as.matrix()
 
   # extract relevant draws as matrix
-  Y <- tibble::as_tibble(draws) %>%
-    dplyr::select(dplyr::all_of(coeff_names)) %>%
-    as.matrix()
+  Y <- draws %>%
+    posterior::subset_draws(variable = coeff_names)
 
   # use matrix product to get draws for each cell
-  draws_for_cells <- Y %*% t(X)
+  draws_for_cells <- Y %*% t(X) %>% posterior::as_draws_matrix()
+
+  # name the variables with cell numbers
+  posterior::variables(draws_for_cells) <- as.character(
+    seq(1, posterior::nvariables(draws_for_cells))
+  )
 
   ## extract draws for factor level combinations ----
 
@@ -147,16 +153,15 @@ extract_cell_draws <- function(model, group, colname='draws') {
     dplyr::select(.data$cell) %>%
     dplyr::pull()
 
-  if (length(cell_numbers) == 1) {
-    out <- draws_for_cells[,cell_numbers] %>% as.data.frame()
-  } else if (length(cell_numbers) > 1) {
-    out <- draws_for_cells[,cell_numbers] %>% rowMeans() %>% as.data.frame()
+  if (length(cell_numbers) >= 1) {
+    out <- draws_for_cells %>%
+      posterior::subset_draws(variable = cell_numbers) %>%
+      posterior::mutate_variables(!!colname := rowMeans(.)) %>%
+      posterior::subset_draws(variable = colname) %>%
+      posterior::as_draws_df()
   } else {
     stop("Level specification '", rlang::quo_get_expr(group_spec) %>% deparse(), "' unknown.")
   }
-
-  # add column name
-  colnames(out) <- colname
 
   out
 }
