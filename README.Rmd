@@ -114,7 +114,7 @@ To obtain posterior draws for a specific design cell, we can use `extract_cell_d
 For instance, draws for women in the second class can be extracted like so:
 
 ```{r cell-draws}
-extract_cell_draws(fit, Sex == "Female" & Class == "2nd" & Age == "Adult") %>% 
+extract_cell_draws(fit, Sex == "Female" & Class == "2nd") %>% 
   head()
 ```
 Parameter `colname` allows changing the default column name in the output, which 
@@ -128,11 +128,11 @@ draws_2nd  <- extract_cell_draws(fit, Class == "2nd", colname = "2nd")
 draws_3rd  <- extract_cell_draws(fit, Class == "3rd", colname = "3rd")
 draws_crew <- extract_cell_draws(fit, Class == "Crew", colname = "Crew")
 
-draws_class <- tibble(draws_1st, draws_2nd, draws_3rd, draws_crew) %>% 
-  pivot_longer(cols = everything(), names_to = "class", values_to = "draws")
+draws_class <- posterior::bind_draws(draws_1st, draws_2nd, draws_3rd, draws_crew) %>% 
+  pivot_longer(cols = posterior::variables(.), names_to = "class", values_to = "value")
 
 draws_class %>% 
-  ggplot(aes(x = draws, color = class, fill = class)) +
+  ggplot(aes(x = value, color = class, fill = class)) +
   geom_density(alpha = 0.4)
 ```
 
