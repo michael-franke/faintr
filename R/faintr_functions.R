@@ -1,10 +1,12 @@
+utils::globalVariables(".")
+
 #' Obtain information about factors in regression models
 #'
 #' This function takes a \code{\link[brms]{brms}} model fit for a
 #' factorial design and returns all design cells along with their encoding in
 #' the regression model.
 #'
-#' @param model An object of class \code{\link[brms]{brmsfit}}.
+#' @param fit An object of class \code{\link[brms]{brmsfit}}.
 #'
 #' @return A \code{\link[tibble]{tibble}} containing the minimal design matrix.
 #'
@@ -34,12 +36,12 @@
 #'}
 #'
 #' @export
-get_cell_definitions <- function(model) {
+get_cell_definitions <- function(fit) {
 
-  check_model(model)
+  check_model(fit)
 
   # get fixed effects names
-  fixef <- all.vars(brms::brmsterms(stats::formula(model))$dpars$mu$fe)
+  fixef <- all.vars(brms::brmsterms(stats::formula(fit))$dpars$mu$fe)
 
   # stop if the intercept is a population-level parameter
   if ("Intercept" %in% fixef || "intercept" %in% fixef) {
@@ -48,8 +50,8 @@ get_cell_definitions <- function(model) {
 
   # concatenate design matrix and actual data
   cell_defs <- dplyr::bind_cols(
-    model$data %>% dplyr::select(dplyr::all_of(fixef)),
-    as.data.frame(brms::standata(model)$X)
+    fit$data %>% dplyr::select(dplyr::all_of(fixef)),
+    as.data.frame(brms::standata(fit)$X)
   ) %>% unique() %>%
     tibble::rowid_to_column(var = 'cell')
 
@@ -64,7 +66,7 @@ get_cell_definitions <- function(model) {
 #' and returns the posterior draws for that group. If no group is specified,
 #' the returned draws are grand means.
 #'
-#' @param model An object of class \code{\link[brms]{brmsfit}}.
+#' @param fit An object of class \code{\link[brms]{brmsfit}}.
 #' @param group An expression specifying the group to filter the draws for.
 #' @param colname A string specifying the column name of the returned data frame;
 #' defaults to 'draws'.
@@ -105,24 +107,24 @@ get_cell_definitions <- function(model) {
 #' extract_cell_draws(fit)
 #' }
 #'
-#' @importFrom rlang .data
+#' @importFrom rlang .data `:=`
 #'
 #' @export
-extract_cell_draws <- function(model, group, colname='draws') {
+extract_cell_draws <- function(fit, group, colname='draws') {
 
   ## extract draws for each design cell ----
 
   # get minimal design matrix as tibble with row numbers in column
-  design_matrix <- get_cell_definitions(model)
+  design_matrix <- get_cell_definitions(fit)
 
   # get fixed effects names
-  fixef <- all.vars(brms::brmsterms(stats::formula(model))$dpars$mu$fe)
+  fixef <- all.vars(brms::brmsterms(stats::formula(fit))$dpars$mu$fe)
 
   # extract posterior draws
-  draws <- posterior::as_draws_df(as.data.frame(model))
+  draws <- posterior::as_draws_matrix(fit)
 
   # extract coefficient names of fixed effects
-  coeff_names <- paste0('b_', as.data.frame(brms::standata(model)$X) %>% colnames())
+  coeff_names <- paste0('b_', brms::standata(fit)$X %>% colnames())
 
   # re-extract minimal design matrix as matrix
   X <- design_matrix %>%
@@ -130,12 +132,16 @@ extract_cell_draws <- function(model, group, colname='draws') {
     as.matrix()
 
   # extract relevant draws as matrix
-  Y <- tibble::as_tibble(draws) %>%
-    dplyr::select(dplyr::all_of(coeff_names)) %>%
-    as.matrix()
+  Y <- draws %>%
+    posterior::subset_draws(variable = coeff_names)
 
   # use matrix product to get draws for each cell
-  draws_for_cells <- Y %*% t(X)
+  draws_for_cells <- Y %*% t(X) %>% posterior::as_draws_matrix()
+
+  # name the variables with cell numbers
+  posterior::variables(draws_for_cells) <- as.character(
+    seq(1, posterior::nvariables(draws_for_cells))
+  )
 
   ## extract draws for factor level combinations ----
 
@@ -147,16 +153,15 @@ extract_cell_draws <- function(model, group, colname='draws') {
     dplyr::select(.data$cell) %>%
     dplyr::pull()
 
-  if (length(cell_numbers) == 1) {
-    out <- draws_for_cells[,cell_numbers] %>% as.data.frame()
-  } else if (length(cell_numbers) > 1) {
-    out <- draws_for_cells[,cell_numbers] %>% rowMeans() %>% as.data.frame()
+  if (length(cell_numbers) >= 1) {
+    out <- draws_for_cells %>%
+      posterior::subset_draws(variable = cell_numbers) %>%
+      posterior::mutate_variables(!!colname := rowMeans(.)) %>%
+      posterior::subset_draws(variable = colname) %>%
+      posterior::as_draws_df()
   } else {
     stop("Level specification '", rlang::quo_get_expr(group_spec) %>% deparse(), "' unknown.")
   }
-
-  # add column name
-  colnames(out) <- colname
 
   out
 }
@@ -174,7 +179,7 @@ extract_cell_draws <- function(model, group, colname='draws') {
 #' the grand mean can be obtained by leaving out one of the two group specifications
 #' in the function call.
 #'
-#' @param model An object of class \code{\link[brms]{brmsfit}}.
+#' @param fit An object of class \code{\link[brms]{brmsfit}}.
 #' @param higher An expression specifying the 'higher' group to filter the draws for.
 #' @param lower An expression specifying the 'lower' group to filter the draws for.
 #' @param hdi A single value (0, 1) defining the probability mass within the
@@ -205,28 +210,28 @@ extract_cell_draws <- function(model, group, colname='draws') {
 #'
 #' # compare female speakers in informal contexts against male speakers in polite contexts
 #' compare_groups(
-#'  model  = fit,
+#'  fit  = fit,
 #'  higher = gender == "F" & context == "inf",
 #'  lower  = gender == "M" & context == "pol"
 #' )
 #'
 #' # compare informal contexts against polite contexts, averaged over gender
 #' compare_groups(
-#'  model  = fit,
+#'  fit  = fit,
 #'  higher = context == "inf",
 #'  lower  = context == "pol"
 #' )
 #'
 #' # compare female speakers against the grand mean
 #' compare_groups(
-#'  model  = fit,
+#'  fit  = fit,
 #'  higher = gender == "F",
 #'  hdi = 0.8
 #' )
 #' }
 #'
 #' @export
-compare_groups <- function(model, higher, lower, hdi=0.95) {
+compare_groups <- function(fit, higher, lower, hdi=0.95) {
 
   # check for invalid 'hdi' input
   if(!is.numeric(hdi) || length(hdi) != 1 || hdi <= 0 || hdi >= 1) {
@@ -237,8 +242,8 @@ compare_groups <- function(model, higher, lower, hdi=0.95) {
   lower  <- dplyr::enquo(lower)
 
   # extract cell draws for both group specifications
-  post_samples_higher <- extract_cell_draws(model = model, !!higher)
-  post_samples_lower <- extract_cell_draws(model = model, !!lower)
+  post_samples_higher <- extract_cell_draws(fit = fit, !!higher)
+  post_samples_lower <- extract_cell_draws(fit = fit, !!lower)
 
   # get names of group specification
   get_group_names <- function(group){

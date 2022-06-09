@@ -2,6 +2,7 @@ suppressWarnings(suppressMessages({
   library(brms)
   library(dplyr)
   library(magrittr)
+  library(posterior)
 }))
 
 test_that("extract_cell_draws() throws expected errors", {
@@ -15,11 +16,11 @@ test_that("extract_cell_draws() returns correct output", {
   fit <- readRDS(test_path('models/fit_gaussian_dummy.rds'))
 
   expect_equal(nrow(extract_cell_draws(fit)), 50)
-  expect_equal(inherits(extract_cell_draws(fit), 'data.frame'), TRUE)
-  expect_equal(colnames(extract_cell_draws(fit, congruency == "con", 'cell_con')), 'cell_con')
+  expect_equal(inherits(extract_cell_draws(fit), 'draws_df'), TRUE)
+  expect_equal(posterior::variables(extract_cell_draws(fit, congruency == "con", 'cell_con')), 'cell_con')
 
   out_single_row <- extract_cell_draws(fit, congruency == "incon" & color == "green") %>%
-    pull() %>%
+    pull("draws") %>%
     sort()
 
   expected_single_row <- as_draws_df(fit) %>%
@@ -29,7 +30,7 @@ test_that("extract_cell_draws() returns correct output", {
 
   expect_equal(out_single_row, expected_single_row)
 
-  out_multiple_rows <- extract_cell_draws(fit, color == "red") %>% pull() %>% sort()
+  out_multiple_rows <- extract_cell_draws(fit, color == "red") %>% pull("draws") %>% sort()
   expected_multiple_rows <- as_draws_df(fit) %>%
     mutate(draws = 0.5*(b_Intercept + b_Intercept + b_congruencyincon)) %>%
     pull(draws) %>% sort()

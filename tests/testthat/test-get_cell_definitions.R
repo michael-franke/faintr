@@ -20,7 +20,7 @@ test_that("get_cell_definitions() throws expected errors with mock backend", {
 
   # wrong model class
   expect_error(get_cell_definitions(lm(y1 ~ cat1 * cat2, data)),
-               "The object passed to argument 'model' is not of class 'brmsfit'. See '\\?brmsfit' for details.")
+               "The object passed to argument 'fit' is not of class 'brmsfit'. See '\\?brmsfit' for details.")
 
   # multivariate models
   bf_mv1 <- bf(mvbind(y1, y2) ~ cat1 + cat2 + cat3) + set_rescor(TRUE)
