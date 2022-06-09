@@ -4,10 +4,10 @@
 \alias{get_cell_definitions}
 \title{Obtain information about factors in regression models}
 \usage{
-get_cell_definitions(model)
+get_cell_definitions(fit)
 }
 \arguments{
-\item{model}{An object of class \code{\link[brms]{brmsfit}}.}
+\item{fit}{An object of class \code{\link[brms]{brmsfit}}.}
 }
 \value{
 A \code{\link[tibble]{tibble}} containing the minimal design matrix.

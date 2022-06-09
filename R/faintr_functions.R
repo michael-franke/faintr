@@ -50,7 +50,7 @@ get_cell_definitions <- function(fit) {
 
   # concatenate design matrix and actual data
   cell_defs <- dplyr::bind_cols(
-    model$data %>% dplyr::select(dplyr::all_of(fixef)),
+    fit$data %>% dplyr::select(dplyr::all_of(fixef)),
     as.data.frame(brms::standata(fit)$X)
   ) %>% unique() %>%
     tibble::rowid_to_column(var = 'cell')

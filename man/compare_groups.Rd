@@ -4,10 +4,10 @@
 \alias{compare_groups}
 \title{Compare two subsets of factorial design cells}
 \usage{
-compare_groups(model, higher, lower, hdi = 0.95)
+compare_groups(fit, higher, lower, hdi = 0.95)
 }
 \arguments{
-\item{model}{An object of class \code{\link[brms]{brmsfit}}.}
+\item{fit}{An object of class \code{\link[brms]{brmsfit}}.}
 
 \item{higher}{An expression specifying the 'higher' group to filter the draws for.}
 
@@ -48,21 +48,21 @@ fit <- brms::brm(formula = pitch ~ gender * context + (1 | subject + sentence),
 
 # compare female speakers in informal contexts against male speakers in polite contexts
 compare_groups(
- model  = fit,
+ fit  = fit,
  higher = gender == "F" & context == "inf",
  lower  = gender == "M" & context == "pol"
 )
 
 # compare informal contexts against polite contexts, averaged over gender
 compare_groups(
- model  = fit,
+ fit  = fit,
  higher = context == "inf",
  lower  = context == "pol"
 )
 
 # compare female speakers against the grand mean
 compare_groups(
- model  = fit,
+ fit  = fit,
  higher = gender == "F",
  hdi = 0.8
 )

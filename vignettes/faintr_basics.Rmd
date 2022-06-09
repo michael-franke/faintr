@@ -224,7 +224,7 @@ Although the fit of the regression model uses a particular reference cell for du
 
 ```{r group-comparison-dummy-conj}
 compare_groups(
-  model  = fit_brms_politeness,
+  fit  = fit_brms_politeness,
   higher = gender == 'F' & context == 'pol',
   lower  = gender == 'M' & context == 'inf'
 )
@@ -234,7 +234,7 @@ As before, we can use negations and disjunctions in the group specifications. Le
 
 ```{r group-comparison-dummy-misc}
 compare_groups(
- model  = fit_brms_politeness, 
+ fit  = fit_brms_politeness, 
  higher = gender == 'F' & context != 'pol',
  lower  = gender != 'F' | context == 'pol',
  hdi    = 0.89
@@ -245,7 +245,7 @@ If we want to compare male and female speakers only (that is, irrespective of co
 
 ```{r group-comparison-dummy-main-effects}
 compare_groups(
- model  = fit_brms_politeness, 
+ fit  = fit_brms_politeness, 
  higher = gender == 'M',
  lower  = gender == 'F'
 )
@@ -255,7 +255,7 @@ We can also compare the effect of female speakers against the grand mean, to ret
 
 ```{r group-comparison-dummy-grand-mean}
 compare_groups(
-  model  = fit_brms_politeness,
+  fit  = fit_brms_politeness,
   higher = gender == 'F'
 )
 ```
