@@ -15,7 +15,8 @@ extract_cell_draws(fit, group, colname = "draws")
 defaults to 'draws'.}
 }
 \value{
-A data frame containing posterior draws for the specified group.
+A \code{\link[posterior]{draws_df}} object containing posterior draws
+for the specified group, as well as additional metadata.
 }
 \description{
 This function takes as input a \code{\link[brms]{brms}} model fit for a

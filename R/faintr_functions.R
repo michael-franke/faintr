@@ -69,7 +69,8 @@ get_cell_definitions <- function(fit) {
 #' @param colname A string specifying the column name of the returned data frame;
 #' defaults to 'draws'.
 #'
-#' @return A data frame containing posterior draws for the specified group.
+#' @return A \code{\link[posterior]{draws_df}} object containing posterior draws
+#' for the specified group, as well as additional metadata.
 #'
 #' @note
 #' The \pkg{faintr} package currently does not support multivariate models and

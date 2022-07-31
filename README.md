@@ -23,8 +23,8 @@ Currently, **faintr** provides the following functions:
 
 -   `get_cell_definitions` returns information on the predictor
     variables and how they are encoded in the model.
--   `extract_cell_draws` returns posterior draws for one subset of
-    design cells.
+-   `extract_cell_draws` returns posterior draws and additional metadata
+    for one subset of design cells.
 -   `compare_groups` returns summary statistics of comparing two subsets
     of design cells.
 
@@ -143,15 +143,21 @@ To obtain posterior draws for a specific design cell, we can use
 can be extracted like so:
 
 ``` r
-extract_cell_draws(fit, Sex == "Female" & Class == "2nd" & Age == "Adult") %>% 
-  head()
-#>       draws
-#> 1 0.9186060
-#> 2 0.7869500
-#> 3 1.1521478
-#> 4 0.9583188
-#> 5 0.9401332
-#> 6 1.1401008
+extract_cell_draws(fit, Sex == "Female" & Class == "2nd" & Age == "Adult")
+#> # A draws_df: 1000 iterations, 4 chains, and 1 variables
+#>    draws
+#> 1   0.92
+#> 2   0.79
+#> 3   1.15
+#> 4   0.96
+#> 5   0.94
+#> 6   1.14
+#> 7   1.30
+#> 8   0.99
+#> 9   0.79
+#> 10  1.38
+#> # ... with 3990 more draws
+#> # ... hidden reserved variables {'.chain', '.iteration', '.draw'}
 ```
 
 Parameter `colname` allows changing the default column name in the
@@ -166,11 +172,11 @@ draws_2nd  <- extract_cell_draws(fit, Class == "2nd", colname = "2nd")
 draws_3rd  <- extract_cell_draws(fit, Class == "3rd", colname = "3rd")
 draws_crew <- extract_cell_draws(fit, Class == "Crew", colname = "Crew")
 
-draws_class <- tibble(draws_1st, draws_2nd, draws_3rd, draws_crew) %>% 
-  pivot_longer(cols = everything(), names_to = "class", values_to = "draws")
+draws_class <- posterior::bind_draws(draws_1st, draws_2nd, draws_3rd, draws_crew) %>% 
+  pivot_longer(cols = posterior::variables(.), names_to = "class", values_to = "value")
 
 draws_class %>% 
-  ggplot(aes(x = draws, color = class, fill = class)) +
+  ggplot(aes(x = value, color = class, fill = class)) +
   geom_density(alpha = 0.4)
 ```
 
