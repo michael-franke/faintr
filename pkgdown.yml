@@ -3,7 +3,7 @@ pkgdown: 2.0.6
 pkgdown_sha: ~
 articles:
   faintr_basics: faintr_basics.html
-last_built: 2022-07-31T22:39Z
+last_built: 2022-07-31T23:23Z
 urls:
   reference: https://michael-franke.github.io/faintr/reference
   article: https://michael-franke.github.io/faintr/articles
