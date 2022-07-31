@@ -4,10 +4,10 @@
 \alias{extract_cell_draws}
 \title{Extract posterior draws for one subset of factorial design cells}
 \usage{
-extract_cell_draws(model, group, colname = "draws")
+extract_cell_draws(fit, group, colname = "draws")
 }
 \arguments{
-\item{model}{An object of class \code{\link[brms]{brmsfit}}.}
+\item{fit}{An object of class \code{\link[brms]{brmsfit}}.}
 
 \item{group}{An expression specifying the group to filter the draws for.}
 
@@ -15,7 +15,8 @@ extract_cell_draws(model, group, colname = "draws")
 defaults to 'draws'.}
 }
 \value{
-A data frame containing posterior draws for the specified group.
+A \code{\link[posterior]{draws_df}} object containing posterior draws
+for the specified group, as well as additional metadata.
 }
 \description{
 This function takes as input a \code{\link[brms]{brms}} model fit for a

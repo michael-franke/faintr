@@ -27,7 +27,7 @@ knitr::opts_chunk$set(echo = TRUE,
 The `faintr` (FActorINTerpreteR) package provides convenience functions for evaluating Bayesian regression models for factorial designs, fitted with the `brms` package (Bürkner, 2017). The `faintr` package allows for the extraction of many meaningful comparisons irrespective of the encoding scheme initially used in the model. The package provides the following convenience functions: 
 
 - `get_cell_definitions` returns information on the factors and their encoding in the model. 
-- `extract_cell_draws` provides the posterior draws for one subset of factorial design cells. 
+- `extract_cell_draws` provides posterior draws and metadata for one subset of factorial design cells. 
 - `compare_groups` allows the comparison of two subsets of factorial design cells.
 
 Currently, the package does not support multivariate models and models that use families `categorical`, `dirichlet`, `multinomial`, and `logistic_normal`. Furthermore, models must not include special effect terms `mo()`, `mi()`, `me()`, and `cs()` for fixed effects. Also note that `faintr` currently does not support models where the intercept is a population-level parameter (class `b`), as is the case when using the `0 + Intercept` syntax in the `brm` function call.
@@ -52,6 +52,7 @@ We will use the following packages in this vignette:
 # data wrangling
 library(dplyr)
 library(tidyr)
+library(posterior)
 
 # pipe operator
 library(magrittr)
@@ -172,35 +173,35 @@ estimate <- fixef(fit_brms_politeness)[,1] %>% round(5) %>% as.matrix()
 Manually adding model coefficients can get tedious and error-prone very quickly, especially for models with more factors, more levels within factors or more complicated encoding schemes. With the function `extract_cell_draws` from the `faintr` package, we can extract posterior samples using a simple filter-syntax. To extract posterior draws for, say, male speakers in informal contexts, we do:
 
 ```{r cell-draws-dummy-conj}
-extract_cell_draws(fit_brms_politeness, gender == 'M' & context == 'inf') %>% head()
+extract_cell_draws(fit_brms_politeness, gender == 'M' & context == 'inf')
 ```
 
 We can also use negations and disjunctions to subset design cells:
 
 ```{r cell-draws-dummy-misc}
-extract_cell_draws(fit_brms_politeness, gender != 'F' | context == 'inf') %>% head()
+extract_cell_draws(fit_brms_politeness, gender != 'F' | context == 'inf')
 ```
 
 To extract posterior draws for only a part of the factors used in the model, we simply omit the unwanted factors in the group specification. Here we are interested in voice pitch in polite contexts, averaged over male and female speakers. Let's also set a more informative column name:
 
 ```{r cell-draws-dummy-main-effect}
-extract_cell_draws(fit_brms_politeness, context == 'pol', colname = 'context:pol') %>% head()
+extract_cell_draws(fit_brms_politeness, context == 'pol', colname = 'context:pol')
 ```
 
 Furthermore, we can extract posterior draws for the grand mean, i.e., the mean of all design cells together. We can do so by not specifying any group level in the function call:
 
 ```{r cell-draws-dummy-grand-mean}
-extract_cell_draws(fit_brms_politeness, colname = 'grand_mean') %>% head()
+extract_cell_draws(fit_brms_politeness, colname = 'grand_mean')
 ```
 
 We can use the output of `extract_cell_draws` for inspecting and comparing posterior draws visually:
 
 ```{r cell-draws-dummy-plot}
-draws_gender <- cbind(extract_cell_draws(fit_brms_politeness, gender == 'M', colname = 'male'),
-                      extract_cell_draws(fit_brms_politeness, gender == 'F', colname = 'female'))
+draws_gender <- bind_draws(extract_cell_draws(fit_brms_politeness, gender == 'M', colname = 'male'),
+                           extract_cell_draws(fit_brms_politeness, gender == 'F', colname = 'female'))
 
 draws_gender %>% 
-  pivot_longer(cols = everything(), names_to = 'group', values_to = 'draws') %>% 
+  pivot_longer(cols = variables(.), names_to = 'group', values_to = 'draws') %>% 
   ggplot(aes(x = draws, color = group, fill = group)) +
   geom_density(alpha = .4)
 ```
@@ -216,6 +217,14 @@ extract_cell_draws(fit_brms_politeness, gender == 'M' & context == 'pol') %>%
   )
 ```
 
+Because `extract_cell_draws` returns the draws in `draws_df` format as provided by the `posterior` package (Bürkner et al., 2022), we can easily access the many convenience functions it offers. Here we subset the draws for the first ten iterations of the first chain using `subset_draws`: 
+
+```{r}
+extract_cell_draws(fit_brms_politeness, gender == 'M' & context == 'pol') %>%
+  subset_draws(variable = 'draws', chain = 1, iteration = 1:10) %>% 
+  glimpse()
+```
+
 ## `compare_groups`
 
 To compare different (groups of) cells to each other, the `faintr` package provides the function `compare_groups`. The function returns the mean difference between the 'higher' and 'lower' group specification, its credible interval (defaults to 95%), as well as the posterior probability and odds that the mean estimate for the 'higher' group is higher than that of the 'lower' group.
@@ -224,7 +233,7 @@ Although the fit of the regression model uses a particular reference cell for du
 
 ```{r group-comparison-dummy-conj}
 compare_groups(
-  model  = fit_brms_politeness,
+  fit  = fit_brms_politeness,
   higher = gender == 'F' & context == 'pol',
   lower  = gender == 'M' & context == 'inf'
 )
@@ -234,7 +243,7 @@ As before, we can use negations and disjunctions in the group specifications. Le
 
 ```{r group-comparison-dummy-misc}
 compare_groups(
- model  = fit_brms_politeness, 
+ fit  = fit_brms_politeness, 
  higher = gender == 'F' & context != 'pol',
  lower  = gender != 'F' | context == 'pol',
  hdi    = 0.89
@@ -245,7 +254,7 @@ If we want to compare male and female speakers only (that is, irrespective of co
 
 ```{r group-comparison-dummy-main-effects}
 compare_groups(
- model  = fit_brms_politeness, 
+ fit  = fit_brms_politeness, 
  higher = gender == 'M',
  lower  = gender == 'F'
 )
@@ -255,7 +264,7 @@ We can also compare the effect of female speakers against the grand mean, to ret
 
 ```{r group-comparison-dummy-grand-mean}
 compare_groups(
-  model  = fit_brms_politeness,
+  fit  = fit_brms_politeness,
   higher = gender == 'F'
 )
 ```
@@ -374,6 +383,8 @@ extract_cell_draws(fit_brms_politeness) %>%
 
 Bürkner P.-C. (2017). brms: An R Package for Bayesian Multilevel Models Using Stan. *Journal of Statistical Software*, *80*(1), 1-28. https://doi.org/10.18637/jss.v080.i01.
 
-Wickham H., François R., Henry L., Müller K. (2022). *dplyr: A Grammar of Data Manipulation*. https://CRAN.R-project.org/package=dplyr
+Bürkner P.-C., Gabry J., Kay M., Vehtari A. (2022). *posterior: Tools for Working with Posterior Distributions*. https://mc-stan.org/posterior/.
+
+Wickham H., François R., Henry L., Müller K. (2022). *dplyr: A Grammar of Data Manipulation*. https://CRAN.R-project.org/package=dplyr.
 
 Winter B., Grawunder S. (2012). The Phonetic Profile of Korean Formality. *Journal of Phonetics*, *40*, 808-15.
