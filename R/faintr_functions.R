@@ -1,5 +1,3 @@
-utils::globalVariables(".")
-
 #' Obtain information about factors in regression models
 #'
 #' This function takes a \code{\link[brms]{brms}} model fit for a
@@ -107,7 +105,7 @@ get_cell_definitions <- function(fit) {
 #' extract_cell_draws(fit)
 #' }
 #'
-#' @importFrom rlang .data `:=`
+#' @importFrom rlang .data
 #'
 #' @export
 extract_cell_draws <- function(fit, group, colname='draws') {
@@ -120,11 +118,16 @@ extract_cell_draws <- function(fit, group, colname='draws') {
   # get fixed effects names
   fixef <- all.vars(brms::brmsterms(stats::formula(fit))$dpars$mu$fe)
 
-  # extract posterior draws
-  draws <- posterior::as_draws_matrix(fit)
-
   # extract coefficient names of fixed effects
   coeff_names <- paste0('b_', brms::standata(fit)$X %>% colnames())
+
+  # extract posterior draws
+  draws <- posterior::as_draws_df(fit, variable = coeff_names)
+
+  # store meta information
+  .chain     <- draws$.chain
+  .iteration <- draws$.iteration
+  .draw      <- draws$.draw
 
   # re-extract minimal design matrix as matrix
   X <- design_matrix %>%
@@ -132,16 +135,12 @@ extract_cell_draws <- function(fit, group, colname='draws') {
     as.matrix()
 
   # extract relevant draws as matrix
-  Y <- draws %>%
-    posterior::subset_draws(variable = coeff_names)
+  Y <- tibble::as_tibble(draws) %>%
+    dplyr::select(dplyr::all_of(coeff_names)) %>%
+    as.matrix()
 
   # use matrix product to get draws for each cell
-  draws_for_cells <- Y %*% t(X) %>% posterior::as_draws_matrix()
-
-  # name the variables with cell numbers
-  posterior::variables(draws_for_cells) <- as.character(
-    seq(1, posterior::nvariables(draws_for_cells))
-  )
+  draws_for_cells <- Y %*% t(X)
 
   ## extract draws for factor level combinations ----
 
@@ -153,15 +152,22 @@ extract_cell_draws <- function(fit, group, colname='draws') {
     dplyr::select(.data$cell) %>%
     dplyr::pull()
 
-  if (length(cell_numbers) >= 1) {
-    out <- draws_for_cells %>%
-      posterior::subset_draws(variable = cell_numbers) %>%
-      posterior::mutate_variables(!!colname := rowMeans(.)) %>%
-      posterior::subset_draws(variable = colname) %>%
-      posterior::as_draws_df()
+  if (length(cell_numbers) == 1) {
+    out <- draws_for_cells[,cell_numbers] %>% as.data.frame()
+  } else if (length(cell_numbers) > 1) {
+    out <- draws_for_cells[,cell_numbers] %>% rowMeans() %>% as.data.frame()
   } else {
     stop("Level specification '", rlang::quo_get_expr(group_spec) %>% deparse(), "' unknown.")
   }
+
+  # add column name
+  colnames(out) <- colname
+
+  # attach meta information
+  out[c(".chain", ".iteration", ".draw")] <- c(.chain, .iteration, .draw)
+
+  # convert to 'draws_df'
+  out <- posterior::as_draws_df(out)
 
   out
 }
@@ -257,11 +263,11 @@ compare_groups <- function(fit, higher, lower, hdi=0.95) {
     hdi = hdi,
     higher = get_group_names(higher),
     lower = get_group_names(lower),
-    mean_diff = mean((post_samples_higher - post_samples_lower)[,1]),
-    l_ci = as.vector(HDInterval::hdi(post_samples_higher - post_samples_lower, credMass = hdi)[1]),
-    u_ci = as.vector(HDInterval::hdi(post_samples_higher - post_samples_lower, credMass = hdi)[2]),
-    post_prob = mean(post_samples_higher > post_samples_lower),
-    post_odds = mean(post_samples_higher > post_samples_lower)/(1 - mean(post_samples_higher > post_samples_lower))
+    mean_diff = mean(post_samples_higher$draws - post_samples_lower$draws),
+    l_ci = as.vector(HDInterval::hdi(post_samples_higher$draws - post_samples_lower$draws, credMass = hdi)[1]),
+    u_ci = as.vector(HDInterval::hdi(post_samples_higher$draws - post_samples_lower$draws, credMass = hdi)[2]),
+    post_prob = mean(post_samples_higher$draws > post_samples_lower$draws),
+    post_odds = mean(post_samples_higher$draws > post_samples_lower$draws)/(1 - mean(post_samples_higher$draws > post_samples_lower$draws))
   )
 
   class(outlist) <- 'faintCompare'
