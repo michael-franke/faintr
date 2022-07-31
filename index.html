@@ -14,8 +14,8 @@
     Bürkner (2017) &lt;doi:10.18637/jss.v080.i01&gt;.">
 <title>Factor Interpreter for Bayesian Regression Models • faintr</title>
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="deps/bootstrap-5.1.0/bootstrap.min.css" rel="stylesheet">
-<script src="deps/bootstrap-5.1.0/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
+<link href="deps/bootstrap-5.1.3/bootstrap.min.css" rel="stylesheet">
+<script src="deps/bootstrap-5.1.3/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- bootstrap-toc --><script src="https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.1/dist/bootstrap-toc.min.js"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Factor Interpreter for Bayesian Regression Models">
 <meta property="og:description" content="The FActorINTerpreteR provides convenience functions for
@@ -88,7 +88,7 @@
 <li>
 <code>get_cell_definitions</code> returns information on the predictor variables and how they are encoded in the model.</li>
 <li>
-<code>extract_cell_draws</code> returns posterior draws for one subset of design cells.</li>
+<code>extract_cell_draws</code> returns posterior draws and additional metadata for one subset of design cells.</li>
 <li>
 <code>compare_groups</code> returns summary statistics of comparing two subsets of design cells.</li>
 </ul>
@@ -98,8 +98,8 @@
 </h2>
 <p>You can install the development version from GitHub with:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co"># install.packages("devtools")</span>
-<span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"michael-franke/faintr"</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># install.packages("devtools")</span></span>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"michael-franke/faintr"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="examples">Examples<a class="anchor" aria-label="anchor" href="#examples"></a>
@@ -140,105 +140,111 @@
 </ul>
 <p>Below, we regress the counts of passengers who survived as a function of their class, sex, and age group using a Binomial logistic regression model fitted with <a href="https://paul-buerkner.github.io/brms/" class="external-link"><strong>brms</strong></a>:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">brm</span><span class="op">(</span><span class="va">Count</span> <span class="op">|</span> <span class="fu">trials</span><span class="op">(</span><span class="va">Total</span><span class="op">)</span> <span class="op">~</span> <span class="va">Class</span> <span class="op">+</span> <span class="va">Sex</span> <span class="op">+</span> <span class="va">Age</span>,  
-           data <span class="op">=</span> <span class="va">data</span>, 
-           family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span>link <span class="op">=</span> <span class="st">"logit"</span><span class="op">)</span>,
-           seed <span class="op">=</span> <span class="fl">123</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">brm</span><span class="op">(</span><span class="va">Count</span> <span class="op">|</span> <span class="fu">trials</span><span class="op">(</span><span class="va">Total</span><span class="op">)</span> <span class="op">~</span> <span class="va">Class</span> <span class="op">+</span> <span class="va">Sex</span> <span class="op">+</span> <span class="va">Age</span>,  </span>
+<span>           data <span class="op">=</span> <span class="va">data</span>, </span>
+<span>           family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/family.html" class="external-link">binomial</a></span><span class="op">(</span>link <span class="op">=</span> <span class="st">"logit"</span><span class="op">)</span>,</span>
+<span>           seed <span class="op">=</span> <span class="fl">123</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>
-<span class="co">#&gt;  Family: binomial </span>
-<span class="co">#&gt;   Links: mu = logit </span>
-<span class="co">#&gt; Formula: Count | trials(Total) ~ Class + Sex + Age </span>
-<span class="co">#&gt;    Data: data (Number of observations: 16) </span>
-<span class="co">#&gt;   Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;</span>
-<span class="co">#&gt;          total post-warmup draws = 4000</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Population-Level Effects: </span>
-<span class="co">#&gt;           Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS</span>
-<span class="co">#&gt; Intercept     2.06      0.17     1.73     2.40 1.00     2567     2451</span>
-<span class="co">#&gt; Class2nd     -1.03      0.20    -1.42    -0.64 1.00     2587     2868</span>
-<span class="co">#&gt; Class3rd     -1.79      0.17    -2.13    -1.45 1.00     2522     2357</span>
-<span class="co">#&gt; ClassCrew    -0.86      0.16    -1.16    -0.56 1.00     2541     2651</span>
-<span class="co">#&gt; SexMale      -2.43      0.14    -2.71    -2.16 1.00     3094     2611</span>
-<span class="co">#&gt; AgeChild      1.07      0.25     0.57     1.56 1.00     2086     2332</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS</span>
-<span class="co">#&gt; and Tail_ESS are effective sample size measures, and Rhat is the potential</span>
-<span class="co">#&gt; scale reduction factor on split chains (at convergence, Rhat = 1).</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  Family: binomial </span></span>
+<span><span class="co">#&gt;   Links: mu = logit </span></span>
+<span><span class="co">#&gt; Formula: Count | trials(Total) ~ Class + Sex + Age </span></span>
+<span><span class="co">#&gt;    Data: data (Number of observations: 16) </span></span>
+<span><span class="co">#&gt;   Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;</span></span>
+<span><span class="co">#&gt;          total post-warmup draws = 4000</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Population-Level Effects: </span></span>
+<span><span class="co">#&gt;           Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS</span></span>
+<span><span class="co">#&gt; Intercept     2.06      0.17     1.73     2.40 1.00     2567     2451</span></span>
+<span><span class="co">#&gt; Class2nd     -1.03      0.20    -1.42    -0.64 1.00     2587     2868</span></span>
+<span><span class="co">#&gt; Class3rd     -1.79      0.17    -2.13    -1.45 1.00     2522     2357</span></span>
+<span><span class="co">#&gt; ClassCrew    -0.86      0.16    -1.16    -0.56 1.00     2541     2651</span></span>
+<span><span class="co">#&gt; SexMale      -2.43      0.14    -2.71    -2.16 1.00     3094     2611</span></span>
+<span><span class="co">#&gt; AgeChild      1.07      0.25     0.57     1.56 1.00     2086     2332</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS</span></span>
+<span><span class="co">#&gt; and Tail_ESS are effective sample size measures, and Rhat is the potential</span></span>
+<span><span class="co">#&gt; scale reduction factor on split chains (at convergence, Rhat = 1).</span></span></code></pre></div>
 <p>To obtain information on the factors and the encoding scheme used in the model, we can use <code>get_cell_definitions</code>:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="reference/get_cell_definitions.html">get_cell_definitions</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span>
-<span class="co">#&gt; # A tibble: 16 x 10</span>
-<span class="co">#&gt;     cell Class Sex    Age   Intercept Class2nd Class3rd ClassCrew SexMale</span>
-<span class="co">#&gt;    &lt;int&gt; &lt;chr&gt; &lt;chr&gt;  &lt;chr&gt;     &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;</span>
-<span class="co">#&gt;  1     1 1st   Male   Child         1        0        0         0       1</span>
-<span class="co">#&gt;  2     2 2nd   Male   Child         1        1        0         0       1</span>
-<span class="co">#&gt;  3     3 3rd   Male   Child         1        0        1         0       1</span>
-<span class="co">#&gt;  4     4 Crew  Male   Child         1        0        0         1       1</span>
-<span class="co">#&gt;  5     5 1st   Female Child         1        0        0         0       0</span>
-<span class="co">#&gt;  6     6 2nd   Female Child         1        1        0         0       0</span>
-<span class="co">#&gt;  7     7 3rd   Female Child         1        0        1         0       0</span>
-<span class="co">#&gt;  8     8 Crew  Female Child         1        0        0         1       0</span>
-<span class="co">#&gt;  9     9 1st   Male   Adult         1        0        0         0       1</span>
-<span class="co">#&gt; 10    10 2nd   Male   Adult         1        1        0         0       1</span>
-<span class="co">#&gt; 11    11 3rd   Male   Adult         1        0        1         0       1</span>
-<span class="co">#&gt; 12    12 Crew  Male   Adult         1        0        0         1       1</span>
-<span class="co">#&gt; 13    13 1st   Female Adult         1        0        0         0       0</span>
-<span class="co">#&gt; 14    14 2nd   Female Adult         1        1        0         0       0</span>
-<span class="co">#&gt; 15    15 3rd   Female Adult         1        0        1         0       0</span>
-<span class="co">#&gt; 16    16 Crew  Female Adult         1        0        0         1       0</span>
-<span class="co">#&gt; # ... with 1 more variable: AgeChild &lt;dbl&gt;</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="reference/get_cell_definitions.html">get_cell_definitions</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 16 x 10</span></span>
+<span><span class="co">#&gt;     cell Class Sex    Age   Intercept Class2nd Class3rd ClassCrew SexMale</span></span>
+<span><span class="co">#&gt;    &lt;int&gt; &lt;chr&gt; &lt;chr&gt;  &lt;chr&gt;     &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt;  1     1 1st   Male   Child         1        0        0         0       1</span></span>
+<span><span class="co">#&gt;  2     2 2nd   Male   Child         1        1        0         0       1</span></span>
+<span><span class="co">#&gt;  3     3 3rd   Male   Child         1        0        1         0       1</span></span>
+<span><span class="co">#&gt;  4     4 Crew  Male   Child         1        0        0         1       1</span></span>
+<span><span class="co">#&gt;  5     5 1st   Female Child         1        0        0         0       0</span></span>
+<span><span class="co">#&gt;  6     6 2nd   Female Child         1        1        0         0       0</span></span>
+<span><span class="co">#&gt;  7     7 3rd   Female Child         1        0        1         0       0</span></span>
+<span><span class="co">#&gt;  8     8 Crew  Female Child         1        0        0         1       0</span></span>
+<span><span class="co">#&gt;  9     9 1st   Male   Adult         1        0        0         0       1</span></span>
+<span><span class="co">#&gt; 10    10 2nd   Male   Adult         1        1        0         0       1</span></span>
+<span><span class="co">#&gt; 11    11 3rd   Male   Adult         1        0        1         0       1</span></span>
+<span><span class="co">#&gt; 12    12 Crew  Male   Adult         1        0        0         1       1</span></span>
+<span><span class="co">#&gt; 13    13 1st   Female Adult         1        0        0         0       0</span></span>
+<span><span class="co">#&gt; 14    14 2nd   Female Adult         1        1        0         0       0</span></span>
+<span><span class="co">#&gt; 15    15 3rd   Female Adult         1        0        1         0       0</span></span>
+<span><span class="co">#&gt; 16    16 Crew  Female Adult         1        0        0         1       0</span></span>
+<span><span class="co">#&gt; # ... with 1 more variable: AgeChild &lt;dbl&gt;</span></span></code></pre></div>
 <p>The output reveals that we used dummy coding for factors <code>Class</code>, <code>Sex</code> and <code>Age</code>, where <code>1st</code>, <code>Female</code>, and <code>Adult</code> are the reference levels, respectively.</p>
 <p>To obtain posterior draws for a specific design cell, we can use <code>extract_cell_draws</code>. For instance, draws for women in the second class can be extracted like so:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="reference/extract_cell_draws.html">extract_cell_draws</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">Sex</span> <span class="op">==</span> <span class="st">"Female"</span> <span class="op">&amp;</span> <span class="va">Class</span> <span class="op">==</span> <span class="st">"2nd"</span> <span class="op">&amp;</span> <span class="va">Age</span> <span class="op">==</span> <span class="st">"Adult"</span><span class="op">)</span> <span class="op"><a href="reference/pipe.html">%&gt;%</a></span> 
-  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span>
-<span class="co">#&gt;       draws</span>
-<span class="co">#&gt; 1 0.9186060</span>
-<span class="co">#&gt; 2 0.7869500</span>
-<span class="co">#&gt; 3 1.1521478</span>
-<span class="co">#&gt; 4 0.9583188</span>
-<span class="co">#&gt; 5 0.9401332</span>
-<span class="co">#&gt; 6 1.1401008</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="reference/extract_cell_draws.html">extract_cell_draws</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">Sex</span> <span class="op">==</span> <span class="st">"Female"</span> <span class="op">&amp;</span> <span class="va">Class</span> <span class="op">==</span> <span class="st">"2nd"</span> <span class="op">&amp;</span> <span class="va">Age</span> <span class="op">==</span> <span class="st">"Adult"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A draws_df: 1000 iterations, 4 chains, and 1 variables</span></span>
+<span><span class="co">#&gt;    draws</span></span>
+<span><span class="co">#&gt; 1   0.92</span></span>
+<span><span class="co">#&gt; 2   0.79</span></span>
+<span><span class="co">#&gt; 3   1.15</span></span>
+<span><span class="co">#&gt; 4   0.96</span></span>
+<span><span class="co">#&gt; 5   0.94</span></span>
+<span><span class="co">#&gt; 6   1.14</span></span>
+<span><span class="co">#&gt; 7   1.30</span></span>
+<span><span class="co">#&gt; 8   0.99</span></span>
+<span><span class="co">#&gt; 9   0.79</span></span>
+<span><span class="co">#&gt; 10  1.38</span></span>
+<span><span class="co">#&gt; # ... with 3990 more draws</span></span>
+<span><span class="co">#&gt; # ... hidden reserved variables {'.chain', '.iteration', '.draw'}</span></span></code></pre></div>
 <p>Parameter <code>colname</code> allows changing the default column name in the output, which facilitates post-processing of cell draws, e.g., for plotting or summary statistics. Here, we extract the draws for each level of <code>Class</code> (averaged over <code>Sex</code> and <code>Age</code>) and visualize the results:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">draws_1st</span>  <span class="op">&lt;-</span> <span class="fu"><a href="reference/extract_cell_draws.html">extract_cell_draws</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">Class</span> <span class="op">==</span> <span class="st">"1st"</span>, colname <span class="op">=</span> <span class="st">"1st"</span><span class="op">)</span>
-<span class="va">draws_2nd</span>  <span class="op">&lt;-</span> <span class="fu"><a href="reference/extract_cell_draws.html">extract_cell_draws</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">Class</span> <span class="op">==</span> <span class="st">"2nd"</span>, colname <span class="op">=</span> <span class="st">"2nd"</span><span class="op">)</span>
-<span class="va">draws_3rd</span>  <span class="op">&lt;-</span> <span class="fu"><a href="reference/extract_cell_draws.html">extract_cell_draws</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">Class</span> <span class="op">==</span> <span class="st">"3rd"</span>, colname <span class="op">=</span> <span class="st">"3rd"</span><span class="op">)</span>
-<span class="va">draws_crew</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/extract_cell_draws.html">extract_cell_draws</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">Class</span> <span class="op">==</span> <span class="st">"Crew"</span>, colname <span class="op">=</span> <span class="st">"Crew"</span><span class="op">)</span>
-
-<span class="va">draws_class</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="op">(</span><span class="va">draws_1st</span>, <span class="va">draws_2nd</span>, <span class="va">draws_3rd</span>, <span class="va">draws_crew</span><span class="op">)</span> <span class="op"><a href="reference/pipe.html">%&gt;%</a></span> 
-  <span class="fu">pivot_longer</span><span class="op">(</span>cols <span class="op">=</span> <span class="fu">everything</span><span class="op">(</span><span class="op">)</span>, names_to <span class="op">=</span> <span class="st">"class"</span>, values_to <span class="op">=</span> <span class="st">"draws"</span><span class="op">)</span>
-
-<span class="va">draws_class</span> <span class="op"><a href="reference/pipe.html">%&gt;%</a></span> 
-  <span class="fu">ggplot</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">draws</span>, color <span class="op">=</span> <span class="va">class</span>, fill <span class="op">=</span> <span class="va">class</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>
-  <span class="fu">geom_density</span><span class="op">(</span>alpha <span class="op">=</span> <span class="fl">0.4</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">draws_1st</span>  <span class="op">&lt;-</span> <span class="fu"><a href="reference/extract_cell_draws.html">extract_cell_draws</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">Class</span> <span class="op">==</span> <span class="st">"1st"</span>, colname <span class="op">=</span> <span class="st">"1st"</span><span class="op">)</span></span>
+<span><span class="va">draws_2nd</span>  <span class="op">&lt;-</span> <span class="fu"><a href="reference/extract_cell_draws.html">extract_cell_draws</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">Class</span> <span class="op">==</span> <span class="st">"2nd"</span>, colname <span class="op">=</span> <span class="st">"2nd"</span><span class="op">)</span></span>
+<span><span class="va">draws_3rd</span>  <span class="op">&lt;-</span> <span class="fu"><a href="reference/extract_cell_draws.html">extract_cell_draws</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">Class</span> <span class="op">==</span> <span class="st">"3rd"</span>, colname <span class="op">=</span> <span class="st">"3rd"</span><span class="op">)</span></span>
+<span><span class="va">draws_crew</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/extract_cell_draws.html">extract_cell_draws</a></span><span class="op">(</span><span class="va">fit</span>, <span class="va">Class</span> <span class="op">==</span> <span class="st">"Crew"</span>, colname <span class="op">=</span> <span class="st">"Crew"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">draws_class</span> <span class="op">&lt;-</span> <span class="fu">posterior</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/posterior/reference/bind_draws.html" class="external-link">bind_draws</a></span><span class="op">(</span><span class="va">draws_1st</span>, <span class="va">draws_2nd</span>, <span class="va">draws_3rd</span>, <span class="va">draws_crew</span><span class="op">)</span> <span class="op"><a href="reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu">pivot_longer</span><span class="op">(</span>cols <span class="op">=</span> <span class="fu">posterior</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/posterior/reference/draws-index.html" class="external-link">variables</a></span><span class="op">(</span><span class="va">.</span><span class="op">)</span>, names_to <span class="op">=</span> <span class="st">"class"</span>, values_to <span class="op">=</span> <span class="st">"value"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">draws_class</span> <span class="op"><a href="reference/pipe.html">%&gt;%</a></span> </span>
+<span>  <span class="fu">ggplot</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">value</span>, color <span class="op">=</span> <span class="va">class</span>, fill <span class="op">=</span> <span class="va">class</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_density</span><span class="op">(</span>alpha <span class="op">=</span> <span class="fl">0.4</span><span class="op">)</span></span></code></pre></div>
 <p><img src="reference/figures/README-plot-1.png" width="70%"></p>
 <p>Finally, we can compare two subsets of design cells with <code>compare_groups</code>. Here, we compare the odds of surviving between female passengers in the first class and male passengers in all but the first class:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="reference/compare_groups.html">compare_groups</a></span><span class="op">(</span><span class="va">fit</span>, 
-               <span class="va">Sex</span> <span class="op">==</span> <span class="st">"Female"</span> <span class="op">&amp;</span> <span class="va">Class</span> <span class="op">==</span> <span class="st">"1st"</span>,
-               <span class="va">Sex</span> <span class="op">==</span> <span class="st">"Male"</span> <span class="op">&amp;</span> <span class="va">Class</span> <span class="op">!=</span> <span class="st">"1st"</span>
-               <span class="op">)</span>
-<span class="co">#&gt; Outcome of comparing groups: </span>
-<span class="co">#&gt;  * higher:  Sex == "Female" &amp; Class == "1st" </span>
-<span class="co">#&gt;  * lower:   Sex == "Male" &amp; Class != "1st" </span>
-<span class="co">#&gt; Mean 'higher - lower':  3.66 </span>
-<span class="co">#&gt; 95% HDI:  [ 3.246 ; 4.045 ]</span>
-<span class="co">#&gt; P('higher - lower' &gt; 0):  1 </span>
-<span class="co">#&gt; Posterior odds:  Inf</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="reference/compare_groups.html">compare_groups</a></span><span class="op">(</span><span class="va">fit</span>, </span>
+<span>               <span class="va">Sex</span> <span class="op">==</span> <span class="st">"Female"</span> <span class="op">&amp;</span> <span class="va">Class</span> <span class="op">==</span> <span class="st">"1st"</span>,</span>
+<span>               <span class="va">Sex</span> <span class="op">==</span> <span class="st">"Male"</span> <span class="op">&amp;</span> <span class="va">Class</span> <span class="op">!=</span> <span class="st">"1st"</span></span>
+<span>               <span class="op">)</span></span>
+<span><span class="co">#&gt; Outcome of comparing groups: </span></span>
+<span><span class="co">#&gt;  * higher:  Sex == "Female" &amp; Class == "1st" </span></span>
+<span><span class="co">#&gt;  * lower:   Sex == "Male" &amp; Class != "1st" </span></span>
+<span><span class="co">#&gt; Mean 'higher - lower':  3.66 </span></span>
+<span><span class="co">#&gt; 95% HDI:  [ 3.246 ; 4.045 ]</span></span>
+<span><span class="co">#&gt; P('higher - lower' &gt; 0):  1 </span></span>
+<span><span class="co">#&gt; Posterior odds:  Inf</span></span></code></pre></div>
 <p>If one of two group specifications is left out, we compare against the grand mean:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="reference/compare_groups.html">compare_groups</a></span><span class="op">(</span><span class="va">fit</span>, 
-               <span class="va">Class</span> <span class="op">==</span> <span class="st">"Crew"</span>
-               <span class="op">)</span>
-<span class="co">#&gt; Outcome of comparing groups: </span>
-<span class="co">#&gt;  * higher:  Class == "Crew" </span>
-<span class="co">#&gt;  * lower:   grand mean </span>
-<span class="co">#&gt; Mean 'higher - lower':  0.05887 </span>
-<span class="co">#&gt; 95% HDI:  [ -0.1276 ; 0.2246 ]</span>
-<span class="co">#&gt; P('higher - lower' &gt; 0):  0.7482 </span>
-<span class="co">#&gt; Posterior odds:  2.972</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="reference/compare_groups.html">compare_groups</a></span><span class="op">(</span><span class="va">fit</span>, </span>
+<span>               <span class="va">Class</span> <span class="op">==</span> <span class="st">"Crew"</span></span>
+<span>               <span class="op">)</span></span>
+<span><span class="co">#&gt; Outcome of comparing groups: </span></span>
+<span><span class="co">#&gt;  * higher:  Class == "Crew" </span></span>
+<span><span class="co">#&gt;  * lower:   grand mean </span></span>
+<span><span class="co">#&gt; Mean 'higher - lower':  0.05887 </span></span>
+<span><span class="co">#&gt; 95% HDI:  [ -0.1276 ; 0.2246 ]</span></span>
+<span><span class="co">#&gt; P('higher - lower' &gt; 0):  0.7482 </span></span>
+<span><span class="co">#&gt; Posterior odds:  2.972</span></span></code></pre></div>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">
@@ -293,7 +299,7 @@
 
 <div class="pkgdown-footer-right">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
     </footer>

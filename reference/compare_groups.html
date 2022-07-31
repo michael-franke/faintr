@@ -7,7 +7,7 @@ of the 'higher' minus the 'lower' group, a credible interval of the mean differe
 as well as the posterior probability and odds that the mean estimate of the 'higher'
 group is higher than that of the 'lower' group. A comparison of one group against
 the grand mean can be obtained by leaving out one of the two group specifications
-in the function call."><title>Compare two subsets of factorial design cells — compare_groups • faintr</title><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.1.0/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.1.0/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous"><!-- bootstrap-toc --><script src="https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.1/dist/bootstrap-toc.min.js"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Compare two subsets of factorial design cells — compare_groups"><meta property="og:description" content="Convenience function for comparing two subsets of factorial design cells.
+in the function call."><title>Compare two subsets of factorial design cells — compare_groups • faintr</title><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.1.3/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.1.3/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous"><!-- bootstrap-toc --><script src="https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.1/dist/bootstrap-toc.min.js"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Compare two subsets of factorial design cells — compare_groups"><meta property="og:description" content="Convenience function for comparing two subsets of factorial design cells.
 It takes a brms model fit, two group specifications
 (two subsets of design cells), and the probability mass within the highest
 density interval of the difference in groups. It outputs the posterior mean
@@ -78,24 +78,33 @@ in the function call.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">compare_groups</span><span class="op">(</span><span class="va">model</span>, <span class="va">higher</span>, <span class="va">lower</span>, hdi <span class="op">=</span> <span class="fl">0.95</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">compare_groups</span><span class="op">(</span><span class="va">fit</span>, <span class="va">higher</span>, <span class="va">lower</span>, hdi <span class="op">=</span> <span class="fl">0.95</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
-    <dl><dt>model</dt>
+    <dl><dt>fit</dt>
 <dd><p>An object of class <code><a href="https://rdrr.io/pkg/brms/man/brmsfit-class.html" class="external-link">brmsfit</a></code>.</p></dd>
+
+
 <dt>higher</dt>
 <dd><p>An expression specifying the 'higher' group to filter the draws for.</p></dd>
+
+
 <dt>lower</dt>
 <dd><p>An expression specifying the 'lower' group to filter the draws for.</p></dd>
+
+
 <dt>hdi</dt>
 <dd><p>A single value (0, 1) defining the probability mass within the
 highest density interval; defaults to 0.95.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>An object of class 'faintCompare' containing summary statistics of the comparison.</p>
+    
+
+<p>An object of class 'faintCompare' containing summary statistics of the comparison.</p>
     </div>
     <div class="section level2">
     <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>
@@ -116,34 +125,34 @@ Using Stan. <em>Journal of Statistical Software</em>, <em>80</em>(1), 1-28.
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span>
-<span class="r-in"><span class="co"># fit a linear mixed effects model</span></span>
-<span class="r-in"><span class="co"># regressing voice pitch against gender and context and including random effects</span></span>
-<span class="r-in"><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">brms</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/brms/man/brm.html" class="external-link">brm</a></span><span class="op">(</span>formula <span class="op">=</span> <span class="va">pitch</span> <span class="op">~</span> <span class="va">gender</span> <span class="op">*</span> <span class="va">context</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">subject</span> <span class="op">+</span> <span class="va">sentence</span><span class="op">)</span>,</span>
-<span class="r-in">                 data <span class="op">=</span> <span class="va">politeness</span><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># compare female speakers in informal contexts against male speakers in polite contexts</span></span>
-<span class="r-in"><span class="fu">compare_groups</span><span class="op">(</span></span>
-<span class="r-in"> model  <span class="op">=</span> <span class="va">fit</span>,</span>
-<span class="r-in"> higher <span class="op">=</span> <span class="va">gender</span> <span class="op">==</span> <span class="st">"F"</span> <span class="op">&amp;</span> <span class="va">context</span> <span class="op">==</span> <span class="st">"inf"</span>,</span>
-<span class="r-in"> lower  <span class="op">=</span> <span class="va">gender</span> <span class="op">==</span> <span class="st">"M"</span> <span class="op">&amp;</span> <span class="va">context</span> <span class="op">==</span> <span class="st">"pol"</span></span>
-<span class="r-in"><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># compare informal contexts against polite contexts, averaged over gender</span></span>
-<span class="r-in"><span class="fu">compare_groups</span><span class="op">(</span></span>
-<span class="r-in"> model  <span class="op">=</span> <span class="va">fit</span>,</span>
-<span class="r-in"> higher <span class="op">=</span> <span class="va">context</span> <span class="op">==</span> <span class="st">"inf"</span>,</span>
-<span class="r-in"> lower  <span class="op">=</span> <span class="va">context</span> <span class="op">==</span> <span class="st">"pol"</span></span>
-<span class="r-in"><span class="op">)</span></span>
-<span class="r-in"></span>
-<span class="r-in"><span class="co"># compare female speakers against the grand mean</span></span>
-<span class="r-in"><span class="fu">compare_groups</span><span class="op">(</span></span>
-<span class="r-in"> model  <span class="op">=</span> <span class="va">fit</span>,</span>
-<span class="r-in"> higher <span class="op">=</span> <span class="va">gender</span> <span class="op">==</span> <span class="st">"F"</span>,</span>
-<span class="r-in"> hdi <span class="op">=</span> <span class="fl">0.8</span></span>
-<span class="r-in"><span class="op">)</span></span>
-<span class="r-in"><span class="op">}</span></span>
-<span class="r-in"></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span><span class="co"># fit a linear mixed effects model</span></span></span>
+<span class="r-in"><span><span class="co"># regressing voice pitch against gender and context and including random effects</span></span></span>
+<span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">brms</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/brms/man/brm.html" class="external-link">brm</a></span><span class="op">(</span>formula <span class="op">=</span> <span class="va">pitch</span> <span class="op">~</span> <span class="va">gender</span> <span class="op">*</span> <span class="va">context</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">subject</span> <span class="op">+</span> <span class="va">sentence</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>                 data <span class="op">=</span> <span class="va">politeness</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># compare female speakers in informal contexts against male speakers in polite contexts</span></span></span>
+<span class="r-in"><span><span class="fu">compare_groups</span><span class="op">(</span></span></span>
+<span class="r-in"><span> fit  <span class="op">=</span> <span class="va">fit</span>,</span></span>
+<span class="r-in"><span> higher <span class="op">=</span> <span class="va">gender</span> <span class="op">==</span> <span class="st">"F"</span> <span class="op">&amp;</span> <span class="va">context</span> <span class="op">==</span> <span class="st">"inf"</span>,</span></span>
+<span class="r-in"><span> lower  <span class="op">=</span> <span class="va">gender</span> <span class="op">==</span> <span class="st">"M"</span> <span class="op">&amp;</span> <span class="va">context</span> <span class="op">==</span> <span class="st">"pol"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># compare informal contexts against polite contexts, averaged over gender</span></span></span>
+<span class="r-in"><span><span class="fu">compare_groups</span><span class="op">(</span></span></span>
+<span class="r-in"><span> fit  <span class="op">=</span> <span class="va">fit</span>,</span></span>
+<span class="r-in"><span> higher <span class="op">=</span> <span class="va">context</span> <span class="op">==</span> <span class="st">"inf"</span>,</span></span>
+<span class="r-in"><span> lower  <span class="op">=</span> <span class="va">context</span> <span class="op">==</span> <span class="st">"pol"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># compare female speakers against the grand mean</span></span></span>
+<span class="r-in"><span><span class="fu">compare_groups</span><span class="op">(</span></span></span>
+<span class="r-in"><span> fit  <span class="op">=</span> <span class="va">fit</span>,</span></span>
+<span class="r-in"><span> higher <span class="op">=</span> <span class="va">gender</span> <span class="op">==</span> <span class="st">"F"</span>,</span></span>
+<span class="r-in"><span> hdi <span class="op">=</span> <span class="fl">0.8</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
@@ -155,7 +164,7 @@ Using Stan. <em>Journal of Statistical Software</em>, <em>80</em>(1), 1-28.
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
     </footer></div>
