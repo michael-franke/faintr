@@ -328,8 +328,13 @@ extract_cell_draws(fit_brms_politeness_sum, gender == 'M' & context == 'pol') %>
 
 This is nearly identical (modulo sampling variation) to the results we obtained above (repeated here) for the previous model with treatment coding:
 
-```{r}
-<<cell-draws-dummy_sumstats>>
+```{r cell-draws-dummy_sumstats_rep}
+extract_cell_draws(fit_brms_politeness, gender == 'M' & context == 'pol') %>%
+  summarise(
+    `|95%` = hdi(draws)[1], 
+    mean   = mean(draws),
+    `95%|` = hdi(draws)[2]
+  )
 ```
 
 For emphasis: If you fit a model with any prior structure on the model coefficients other than uniform/uninformative priors, it is not guaranteed that the results are the same for models with different contrast coding schemes. For illustration, consider the sum-coded model from before with a skeptical prior on coefficients `gender:M` and `context:pol`:
