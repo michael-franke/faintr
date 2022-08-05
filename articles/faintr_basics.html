@@ -70,7 +70,7 @@
       <img src="" class="logo" alt=""><h1>Comparing groups of factor levels with faintr</h1>
                         <h4 data-toc-skip class="author">Michael Franke</h4>
             
-            <h4 data-toc-skip class="date">2022-07-31</h4>
+            <h4 data-toc-skip class="date">2022-08-05</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/michael-franke/faintr/blob/HEAD/vignettes/faintr_basics.Rmd" class="external-link"><code>vignettes/faintr_basics.Rmd</code></a></small>
       <div class="d-none name"><code>faintr_basics.Rmd</code></div>
@@ -436,8 +436,19 @@
 <span><span class="co">##    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">1</span>   87.6  136.   190.</span></span></code></pre></div>
 <p>This is nearly identical (modulo sampling variation) to the results we obtained above (repeated here) for the previous model with treatment coding:</p>
-<p>For emphasis: If you fit a model with any prior structure on the model coefficients other than uniform/uninformative priors, it is not guaranteed that the results are the same for models with different contrast coding schemes. For illustration, consider the sum-coded model from before with a skeptical prior on coefficients <code>gender:M</code> and <code>context:pol</code>:</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/extract_cell_draws.html">extract_cell_draws</a></span><span class="op">(</span><span class="va">fit_brms_politeness</span>, <span class="va">gender</span> <span class="op">==</span> <span class="st">'M'</span> <span class="op">&amp;</span> <span class="va">context</span> <span class="op">==</span> <span class="st">'pol'</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span></span>
+<span>    `|95%` <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/HDInterval/man/hdi.html" class="external-link">hdi</a></span><span class="op">(</span><span class="va">draws</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, </span>
+<span>    mean   <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">draws</span><span class="op">)</span>,</span>
+<span>    `95%|` <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/HDInterval/man/hdi.html" class="external-link">hdi</a></span><span class="op">(</span><span class="va">draws</span><span class="op">)</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="co">## <span style="color: #949494;"># A tibble: 1 × 3</span></span></span>
+<span><span class="co">##   `|95%`  mean `95%|`</span></span>
+<span><span class="co">##    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span>   86.6  133.   185.</span></span></code></pre></div>
+<p>For emphasis: If you fit a model with any prior structure on the model coefficients other than uniform/uninformative priors, it is not guaranteed that the results are the same for models with different contrast coding schemes. For illustration, consider the sum-coded model from before with a skeptical prior on coefficients <code>gender:M</code> and <code>context:pol</code>:</p>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># skeptical prior on fixed effects</span></span>
 <span><span class="va">priors</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/brms/man/set_prior.html" class="external-link">prior</a></span><span class="op">(</span><span class="fu">normal</span><span class="op">(</span><span class="fl">0</span>, <span class="fl">10</span><span class="op">)</span>, coef <span class="op">=</span> <span class="va">`gender:M`</span><span class="op">)</span>,</span>
@@ -455,7 +466,7 @@
 <span>                                     seed <span class="op">=</span> <span class="fl">1234</span></span>
 <span>                                     <span class="op">)</span></span></code></pre></div>
 <p>The priors we have chosen here translate into a prior belief that there is likely no difference between a given factor level and the grand mean. Since the data set is relatively small, the priors have a strong influence on the resulting posterior estimates:</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/extract_cell_draws.html">extract_cell_draws</a></span><span class="op">(</span><span class="va">fit_brms_politeness_sum_prior</span>, <span class="va">gender</span> <span class="op">==</span> <span class="st">'M'</span> <span class="op">&amp;</span> <span class="va">context</span> <span class="op">==</span> <span class="st">'pol'</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span></span>
 <span>    `|95%` <span class="op">=</span> <span class="fu">HDInterval</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/HDInterval/man/hdi.html" class="external-link">hdi</a></span><span class="op">(</span><span class="va">draws</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, </span>
@@ -467,7 +478,7 @@
 <span><span class="co">##    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">1</span>   127.  184.   249.</span></span></code></pre></div>
 <p>As expected, the posterior estimate for male speakers in polite contexts strongly deviates from the estimate for the same factor level under the dummy-coded model from before. In fact, the estimate is now much closer to the grand mean (which makes sense given the way we informed the model).</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/extract_cell_draws.html">extract_cell_draws</a></span><span class="op">(</span><span class="va">fit_brms_politeness</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span></span>
 <span>    `|95%` <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/HDInterval/man/hdi.html" class="external-link">hdi</a></span><span class="op">(</span><span class="va">draws</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, </span>
