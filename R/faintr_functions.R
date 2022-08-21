@@ -191,6 +191,8 @@ extract_cell_draws <- function(fit, group, colname='draws') {
 #' @param lower An expression specifying the 'lower' group to filter the draws for.
 #' @param hdi A single value (0, 1) defining the probability mass within the
 #' highest density interval; defaults to 0.95.
+#' @param include_samples Logical. Indicates whether to include the draws of the
+#' 'higher' and 'lower' group in the returned object; defaults to \code{TRUE}.
 #'
 #' @return An object of class 'faintCompare' containing summary statistics of the comparison.
 #'
@@ -238,7 +240,7 @@ extract_cell_draws <- function(fit, group, colname='draws') {
 #' }
 #'
 #' @export
-compare_groups <- function(fit, higher, lower, hdi=0.95) {
+compare_groups <- function(fit, higher, lower, hdi=0.95, include_samples=TRUE) {
 
   # check for invalid 'hdi' input
   if(!is.numeric(hdi) || length(hdi) != 1 || hdi <= 0 || hdi >= 1) {
@@ -267,8 +269,7 @@ compare_groups <- function(fit, higher, lower, hdi=0.95) {
   post_prob <- mean(post_samples_higher$draws > post_samples_lower$draws)
   post_odds <- post_prob / (1 - post_prob)
 
-  outlist <- list(
-    hdi = hdi,
+  comparison <- data.frame(
     higher = get_group_names(higher),
     lower = get_group_names(lower),
     mean_diff = mean_diff,
@@ -277,6 +278,12 @@ compare_groups <- function(fit, higher, lower, hdi=0.95) {
     post_prob = post_prob,
     post_odds = post_odds
   )
+
+  outlist <- list(hdi = hdi, comparison = comparison)
+
+  if (include_samples) {
+    outlist <- c(outlist, list(samples = list(higher = post_samples_higher, lower = post_samples_lower)))
+  }
 
   class(outlist) <- 'faintCompare'
   return(outlist)
@@ -291,10 +298,10 @@ compare_groups <- function(fit, higher, lower, hdi=0.95) {
 #' @export
 print.faintCompare <- function(x, ...) {
   cat("Outcome of comparing groups: \n")
-  cat(" * higher: ", x$higher, "\n")
-  cat(" * lower:  ", x$lower, "\n")
-  cat("Mean 'higher - lower': ", signif(x$mean_diff, 4), "\n")
-  cat(paste0(x$hdi*100, "% HDI: "), "[", signif(x$l_ci, 4), ";", signif(x$u_ci, 4), "]\n")
-  cat("P('higher - lower' > 0): ", signif(x$post_prob, 4), "\n")
-  cat("Posterior odds: ", signif(x$post_odds, 4), "\n")
+  cat(" * higher: ", x$comparison$higher, "\n")
+  cat(" * lower:  ", x$comparison$lower, "\n")
+  cat("Mean 'higher - lower': ", signif(x$comparison$mean_diff, 4), "\n")
+  cat(paste0(x$hdi*100, "% HDI: "), "[", signif(x$comparison$l_ci, 4), ";", signif(x$comparison$u_ci, 4), "]\n")
+  cat("P('higher - lower' > 0): ", signif(x$comparison$post_prob, 4), "\n")
+  cat("Posterior odds: ", signif(x$comparison$post_odds, 4), "\n")
 }

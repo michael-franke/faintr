@@ -23,10 +23,10 @@ test_that("get_cell_definitions() returns correct output", {
 
   expect_equal(inherits(compare_groups(fit), "faintCompare"), TRUE)
   expect_equal(compare_groups(fit, congruency == "con", hdi = 0.89)$hdi, 0.89)
-  expect_equal(compare_groups(fit, color == "red", congruency != "con")$higher, "color == \"red\"")
-  expect_equal(compare_groups(fit, color == "red", congruency != "con")$lower, "congruency != \"con\"")
-  expect_equal(compare_groups(fit, lower = color == "green")$higher, "grand mean")
-  expect_equal(compare_groups(fit, lower = congruency != "con" | color == "red")$lower,
+  expect_equal(compare_groups(fit, color == "red", congruency != "con")$comparison$higher, "color == \"red\"")
+  expect_equal(compare_groups(fit, color == "red", congruency != "con")$comparison$lower, "congruency != \"con\"")
+  expect_equal(compare_groups(fit, lower = color == "green")$comparison$higher, "grand mean")
+  expect_equal(compare_groups(fit, lower = congruency != "con" | color == "red")$comparison$lower,
                "congruency != \"con\" | color == \"red\"")
 })
 

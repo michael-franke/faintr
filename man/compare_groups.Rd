@@ -4,7 +4,7 @@
 \alias{compare_groups}
 \title{Compare two subsets of factorial design cells}
 \usage{
-compare_groups(fit, higher, lower, hdi = 0.95)
+compare_groups(fit, higher, lower, hdi = 0.95, include_samples = TRUE)
 }
 \arguments{
 \item{fit}{An object of class \code{\link[brms]{brmsfit}}.}
@@ -15,6 +15,9 @@ compare_groups(fit, higher, lower, hdi = 0.95)
 
 \item{hdi}{A single value (0, 1) defining the probability mass within the
 highest density interval; defaults to 0.95.}
+
+\item{include_samples}{Logical. Indicates whether to include the draws of the
+'higher' and 'lower' group in the returned object; defaults to \code{TRUE}.}
 }
 \value{
 An object of class 'faintCompare' containing summary statistics of the comparison.
