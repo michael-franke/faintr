@@ -260,15 +260,22 @@ compare_groups <- function(fit, higher, lower, hdi=0.95) {
     rlang::quo_get_expr(group) %>% deparse()
   }
 
+  # compute summary statistics
+  diff <- post_samples_higher$draws - post_samples_lower$draws
+  mean_diff <- mean(diff)
+  ci <- HDInterval::hdi(diff, credMass = hdi)
+  post_prob <- mean(post_samples_higher$draws > post_samples_lower$draws)
+  post_odds <- post_prob / (1 - post_prob)
+
   outlist <- list(
     hdi = hdi,
     higher = get_group_names(higher),
     lower = get_group_names(lower),
-    mean_diff = mean(post_samples_higher$draws - post_samples_lower$draws),
-    l_ci = as.vector(HDInterval::hdi(post_samples_higher$draws - post_samples_lower$draws, credMass = hdi)[1]),
-    u_ci = as.vector(HDInterval::hdi(post_samples_higher$draws - post_samples_lower$draws, credMass = hdi)[2]),
-    post_prob = mean(post_samples_higher$draws > post_samples_lower$draws),
-    post_odds = mean(post_samples_higher$draws > post_samples_lower$draws)/(1 - mean(post_samples_higher$draws > post_samples_lower$draws))
+    mean_diff = mean_diff,
+    l_ci = as.vector(ci[1]),
+    u_ci = as.vector(ci[2]),
+    post_prob = post_prob,
+    post_odds = post_odds
   )
 
   class(outlist) <- 'faintCompare'
