@@ -34,7 +34,14 @@
 #'}
 #'
 #' @export
-get_cell_definitions <- function(fit) {
+get_cell_definitions <- function(fit, ...) {
+
+UseMethod("get_cell_definitions")
+
+  }
+
+#' @export
+get_cell_definitions.brmsfit <- function(fit, ...) {
 
   check_model(fit)
 
@@ -47,13 +54,32 @@ get_cell_definitions <- function(fit) {
   }
 
   # concatenate design matrix and actual data
+  cell_defs <- fit$data[fixef] %>%
+    cbind(brms::standata(fit)$X) %>%
+    unique()
+
   cell_defs <- dplyr::bind_cols(
     fit$data %>% dplyr::select(dplyr::all_of(fixef)),
-    as.data.frame(brms::standata(fit)$X)
-  ) %>% unique() %>%
-    tibble::rowid_to_column(var = 'cell')
+    brms::standata(fit)$X
+      ) %>% unique()
 
-  return(tibble::as_tibble(cell_defs))
+  return(cell_defs)
+}
+
+#' @export
+get_cell_definitions.stanreg <- function(fit, ...) {
+
+  #check_model(fit)
+
+  # get fixed effects names
+  fixef <- all.vars(stats::formula(fit))[-1]
+
+  # concatenate design matrix and actual data
+  cell_defs <- fit$data[fixef] %>%
+    cbind(rstanarm::get_x(fit)) %>%
+    unique()
+
+  return(cell_defs)
 }
 
 
@@ -106,10 +132,16 @@ get_cell_definitions <- function(fit) {
 #' extract_cell_draws(fit)
 #' }
 #'
-#' @importFrom rlang .data
 #'
 #' @export
-extract_cell_draws <- function(fit, group, colname='draws') {
+#'
+extract_cell_draws <- function(fit, ...) {
+UseMethod("extract_cell_draws")
+
+}
+
+#' @export
+extract_cell_draws.brmsfit <- function(fit, group, colname='draws', ...) {
 
   ## extract draws for each design cell ----
 
@@ -123,25 +155,18 @@ extract_cell_draws <- function(fit, group, colname='draws') {
   coeff_names <- paste0('b_', brms::standata(fit)$X %>% colnames())
 
   # extract posterior draws
-  draws <- posterior::as_draws_df(fit, variable = coeff_names)
-
-  # store meta information
-  .chain     <- draws$.chain
-  .iteration <- draws$.iteration
-  .draw      <- draws$.draw
+  draws <- posterior::as_draws_array(fit, variable = coeff_names)
 
   # re-extract minimal design matrix as matrix
-  X <- design_matrix %>%
-    dplyr::select(!dplyr::all_of(c(fixef,'cell'))) %>%
-    as.matrix()
+  X <- design_matrix[-c(seq_along(fixef))]
 
   # extract relevant draws as matrix
-  Y <- tibble::as_tibble(draws) %>%
-    dplyr::select(dplyr::all_of(coeff_names)) %>%
-    as.matrix()
+  Y <- draws[, , coeff_names]
 
   # use matrix product to get draws for each cell
-  draws_for_cells <- Y %*% t(X)
+  draws_for_cells <- posterior::as_draws_matrix(Y) %*% t(X) %>%
+    posterior::rvar(nchains = posterior::nchains(Y)) %>%
+    posterior::as_draws_array()
 
   ## extract draws for factor level combinations ----
 
@@ -149,14 +174,23 @@ extract_cell_draws <- function(fit, group, colname='draws') {
 
   # get cell numbers based on specification
   cell_numbers <- design_matrix %>%
+    dplyr::mutate(cell = row_number()) %>%
     dplyr::filter(!!group_spec) %>%
-    dplyr::select(.data$cell) %>%
-    dplyr::pull()
+    dplyr::pull(cell)
 
   if (length(cell_numbers) == 1) {
-    out <- draws_for_cells[,cell_numbers] %>% as.data.frame()
+    out <- draws_for_cells[, , cell_numbers] %>%
+      posterior::draws_matrix(
+        x = .,
+        .nchains = posterior::nchains(draws_for_cells)
+      )
   } else if (length(cell_numbers) > 1) {
-    out <- draws_for_cells[,cell_numbers] %>% rowMeans() %>% as.data.frame()
+    out <- draws_for_cells[, , cell_numbers] %>%
+      rowMeans() %>%
+      posterior::draws_matrix(
+        x = .,
+        .nchains = posterior::nchains(draws_for_cells)
+      )
   } else {
     stop("Level specification '", rlang::quo_get_expr(group_spec) %>% deparse(), "' unknown.")
   }
@@ -164,13 +198,69 @@ extract_cell_draws <- function(fit, group, colname='draws') {
   # add column name
   colnames(out) <- colname
 
-  # attach meta information
-  out[c(".chain", ".iteration", ".draw")] <- c(.chain, .iteration, .draw)
+  posterior::as_draws_df(out)
+}
 
-  # convert to 'draws_df'
-  out <- posterior::as_draws_df(out)
 
-  out
+#' @export
+extract_cell_draws.stanreg <- function(fit, group, colname = 'draws', ...) {
+
+  ## extract draws for each design cell ----
+
+  # get minimal design matrix as tibble with row numbers in column
+  design_matrix <- get_cell_definitions(fit)
+
+  # get fixed effects names
+  fixef <- all.vars(stats::formula(fit))[-1]
+
+  # extract coefficient names of fixed effects
+  coeff_names <- rstanarm::get_x(fit) %>% colnames()
+
+  # extract posterior draws
+  draws <- posterior::as_draws_array(as.array(fit), variable = coeff_names)
+
+  # re-extract minimal design matrix as matrix
+  X <- design_matrix[-c(seq_along(fixef))]
+
+  # extract relevant draws as matrix
+  Y <- draws[, , coeff_names]
+
+  # use matrix product to get draws for each cell
+  draws_for_cells <- posterior::as_draws_matrix(Y) %*% t(X) %>%
+    posterior::rvar(nchains = posterior::nchains(Y)) %>%
+    posterior::as_draws_array()
+
+  ## extract draws for factor level combinations ----
+
+  group_spec <- dplyr::enquo(group)
+
+  # get cell numbers based on specification
+  cell_numbers <- design_matrix %>%
+    dplyr::mutate(cell = row_number()) %>%
+    dplyr::filter(!!group_spec) %>%
+    dplyr::pull(cell)
+
+  if (length(cell_numbers) == 1) {
+    out <- draws_for_cells[, , cell_numbers] %>%
+      posterior::draws_matrix(
+        x = .,
+        .nchains = posterior::nchains(draws_for_cells)
+      )
+  } else if (length(cell_numbers) > 1) {
+    out <- draws_for_cells[, , cell_numbers] %>%
+      rowMeans() %>%
+      posterior::draws_matrix(
+        x = .,
+        .nchains = posterior::nchains(draws_for_cells)
+      )
+  } else {
+    stop("Level specification '", rlang::quo_get_expr(group_spec) %>% deparse(), "' unknown.")
+  }
+
+  # add column name
+  colnames(out) <- colname
+
+  posterior::as_draws_df(out)
 }
 
 
