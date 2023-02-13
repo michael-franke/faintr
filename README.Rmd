@@ -155,3 +155,17 @@ compare_groups(fit,
                )
 ```
 
+If the Boolean flag `include_bf` is set to `TRUE` (default is `FALSE`), Bayes Factors for the inequality (higher > lower) are approximated in comparison to the "negated hypothesis" (lower <= higher). However, this requires specifying proper priors for all parameters:
+
+```{r }
+fit_with_priors <- brm(Count | trials(Total) ~ Class + Sex + Age,  
+           data = data, 
+           family = binomial(link = "logit"),
+           prior = prior("normal(0,100)"),
+           seed = 123)
+compare_groups(fit_with_priors, 
+               higher = Class == "3rd" & Sex == "Female" & Age == "Child",
+               lower = Class == "3rd" & Sex == "Female" & Age == "Adult",
+               include_bf = TRUE
+               )
+```
