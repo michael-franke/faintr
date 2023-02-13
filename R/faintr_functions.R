@@ -273,7 +273,7 @@ compare_groups <- function(fit, higher, lower, hdi=0.95, include_bf = FALSE) {
   if (include_bf) {
 
     suppressMessages(
-      fit_prior_only <- update(
+      fit_prior_only <- stats::update(
         fit,
         silent = TRUE,
         refresh = 0,
