@@ -285,8 +285,6 @@ compare_groups <- function(fit, higher, lower, hdi=0.95, include_bf = FALSE) {
 
     prior_prob <- mean(prior_samples_higher$draws > prior_samples_lower$draws)
     prior_odds <- prior_prob / (1 - prior_prob)
-    print(prior_odds)
-    print(post_odds)
     bayes_factor = post_odds / prior_odds
   } else {
     bayes_factor = NA
