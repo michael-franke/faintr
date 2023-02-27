@@ -109,7 +109,7 @@ get_cell_definitions <- function(fit) {
 #' @importFrom rlang .data
 #'
 #' @export
-extract_cell_draws <- function(fit, group, colname='draws') {
+extract_cell_draws <- function(fit, group=NULL, colname='draws') {
 
   ## extract draws for each design cell ----
 
@@ -145,13 +145,17 @@ extract_cell_draws <- function(fit, group, colname='draws') {
 
   ## extract draws for factor level combinations ----
 
-  group_spec <- dplyr::enquo(group)
+  group_spec <- rlang::enquo(group)
 
-  # get cell numbers based on specification
-  cell_numbers <- design_matrix %>%
-    dplyr::filter(!!group_spec) %>%
-    dplyr::select(.data$cell) %>%
-    dplyr::pull()
+  if (rlang::quo_is_null(group_spec)) {
+    cell_numbers <- design_matrix$cell
+  } else {
+    # get cell numbers based on specification
+    cell_numbers <- design_matrix %>%
+      dplyr::filter(!!group_spec) %>%
+      dplyr::select(.data$cell) %>%
+      dplyr::pull()
+  }
 
   if (length(cell_numbers) == 1) {
     out <- draws_for_cells[,cell_numbers] %>% as.data.frame()
@@ -191,6 +195,8 @@ extract_cell_draws <- function(fit, group, colname='draws') {
 #' @param lower An expression specifying the 'lower' group to filter the draws for.
 #' @param hdi A single value (0, 1) defining the probability mass within the
 #' highest density interval; defaults to 0.95.
+#' @param include_bf A Boolean flag indicating whether Bayes Factors should be
+#' approximated (required additional sampling); defaults to FALSE.
 #'
 #' @return An object of class 'faintCompare' containing summary statistics of the comparison.
 #'
@@ -238,23 +244,23 @@ extract_cell_draws <- function(fit, group, colname='draws') {
 #' }
 #'
 #' @export
-compare_groups <- function(fit, higher, lower, hdi=0.95) {
+compare_groups <- function(fit, higher=NULL, lower=NULL, hdi=0.95, include_bf=FALSE) {
 
   # check for invalid 'hdi' input
   if(!is.numeric(hdi) || length(hdi) != 1 || hdi <= 0 || hdi >= 1) {
     stop("Argument 'hdi' must be a single value between 0 and 1.")
   }
 
-  higher <- dplyr::enquo(higher)
-  lower  <- dplyr::enquo(lower)
+  higher <- rlang::enquo(higher)
+  lower  <- rlang::enquo(lower)
 
   # extract cell draws for both group specifications
   post_samples_higher <- extract_cell_draws(fit = fit, !!higher)
-  post_samples_lower <- extract_cell_draws(fit = fit, !!lower)
+  post_samples_lower  <- extract_cell_draws(fit = fit, !!lower)
 
   # get names of group specification
   get_group_names <- function(group){
-    if (rlang::quo_is_missing(group) == 1) {
+    if (rlang::quo_is_null(group)) {
       return('grand mean')
     }
     rlang::quo_get_expr(group) %>% deparse()
@@ -267,6 +273,27 @@ compare_groups <- function(fit, higher, lower, hdi=0.95) {
   post_prob <- mean(post_samples_higher$draws > post_samples_lower$draws)
   post_odds <- post_prob / (1 - post_prob)
 
+  # if BF is requested, get prior-only fit, compute
+  if (include_bf) {
+
+    suppressMessages(
+      fit_prior_only <- stats::update(
+        fit,
+        silent = TRUE,
+        refresh = 0,
+        sample_prior = "only"
+      ))
+
+    prior_samples_higher <- extract_cell_draws(fit = fit_prior_only, !!higher)
+    prior_samples_lower  <- extract_cell_draws(fit = fit_prior_only, !!lower)
+
+    prior_prob <- mean(prior_samples_higher$draws > prior_samples_lower$draws)
+    prior_odds <- prior_prob / (1 - prior_prob)
+    bayes_factor = post_odds / prior_odds
+  } else {
+    bayes_factor = NA
+  }
+
   outlist <- list(
     hdi = hdi,
     higher = get_group_names(higher),
@@ -275,13 +302,14 @@ compare_groups <- function(fit, higher, lower, hdi=0.95) {
     l_ci = as.vector(ci[1]),
     u_ci = as.vector(ci[2]),
     post_prob = post_prob,
-    post_odds = post_odds
+    post_odds = post_odds,
+    include_bf = include_bf,
+    bayes_factor = bayes_factor
   )
 
   class(outlist) <- 'faintCompare'
   return(outlist)
 }
-
 
 #' Print group comparison object
 
@@ -297,4 +325,7 @@ print.faintCompare <- function(x, ...) {
   cat(paste0(x$hdi*100, "% HDI: "), "[", signif(x$l_ci, 4), ";", signif(x$u_ci, 4), "]\n")
   cat("P('higher - lower' > 0): ", signif(x$post_prob, 4), "\n")
   cat("Posterior odds: ", signif(x$post_odds, 4), "\n")
+  if (x$include_bf) {
+    cat("Bayes factor: ", signif(x$bayes_factor, 4), "\n")
+  }
 }
