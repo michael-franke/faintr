@@ -109,7 +109,7 @@ get_cell_definitions <- function(fit) {
 #' @importFrom rlang .data
 #'
 #' @export
-extract_cell_draws <- function(fit, group, colname='draws') {
+extract_cell_draws <- function(fit, group=NULL, colname='draws') {
 
   ## extract draws for each design cell ----
 
@@ -145,13 +145,17 @@ extract_cell_draws <- function(fit, group, colname='draws') {
 
   ## extract draws for factor level combinations ----
 
-  group_spec <- dplyr::enquo(group)
+  group_spec <- rlang::enquo(group)
 
-  # get cell numbers based on specification
-  cell_numbers <- design_matrix %>%
-    dplyr::filter(!!group_spec) %>%
-    dplyr::select(.data$cell) %>%
-    dplyr::pull()
+  if (rlang::quo_is_null(group_spec)) {
+    cell_numbers <- design_matrix$cell
+  } else {
+    # get cell numbers based on specification
+    cell_numbers <- design_matrix %>%
+      dplyr::filter(!!group_spec) %>%
+      dplyr::select(.data$cell) %>%
+      dplyr::pull()
+  }
 
   if (length(cell_numbers) == 1) {
     out <- draws_for_cells[,cell_numbers] %>% as.data.frame()
@@ -240,23 +244,23 @@ extract_cell_draws <- function(fit, group, colname='draws') {
 #' }
 #'
 #' @export
-compare_groups <- function(fit, higher, lower, hdi=0.95, include_bf = FALSE) {
+compare_groups <- function(fit, higher=NULL, lower=NULL, hdi=0.95, include_bf=FALSE) {
 
   # check for invalid 'hdi' input
   if(!is.numeric(hdi) || length(hdi) != 1 || hdi <= 0 || hdi >= 1) {
     stop("Argument 'hdi' must be a single value between 0 and 1.")
   }
 
-  higher <- dplyr::enquo(higher)
-  lower  <- dplyr::enquo(lower)
+  higher <- rlang::enquo(higher)
+  lower  <- rlang::enquo(lower)
 
   # extract cell draws for both group specifications
-  post_samples_higher <- faintr::extract_cell_draws(fit = fit, !!higher)
-  post_samples_lower  <- faintr::extract_cell_draws(fit = fit, !!lower)
+  post_samples_higher <- extract_cell_draws(fit = fit, !!higher)
+  post_samples_lower  <- extract_cell_draws(fit = fit, !!lower)
 
   # get names of group specification
   get_group_names <- function(group){
-    if (rlang::quo_is_missing(group) == 1) {
+    if (rlang::quo_is_null(group)) {
       return('grand mean')
     }
     rlang::quo_get_expr(group) %>% deparse()

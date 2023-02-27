@@ -4,7 +4,13 @@
 \alias{compare_groups}
 \title{Compare two subsets of factorial design cells}
 \usage{
-compare_groups(fit, higher, lower, hdi = 0.95, include_bf = FALSE)
+compare_groups(
+  fit,
+  higher = NULL,
+  lower = NULL,
+  hdi = 0.95,
+  include_bf = FALSE
+)
 }
 \arguments{
 \item{fit}{An object of class \code{\link[brms]{brmsfit}}.}
