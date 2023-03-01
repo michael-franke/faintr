@@ -17,9 +17,11 @@ knitr::opts_chunk$set(
 
 library(faintr)
 library(brms)
+library(posterior)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
+library(aida)
 
 theme_set(theme_bw() + theme(plot.background = element_blank()))
 
@@ -69,103 +71,117 @@ devtools::install_github("michael-franke/faintr")
 In this section, we shortly introduce how to use the package. For a more detailed 
 overview, please refer to the [vignette](https://michael-franke.github.io/faintr/articles/faintr_basics.html).
 
-We will use a preprocessed version of R's built-in Titanic data set:
+We will use a preprocessed version of the mouse-tracking data set from the [**aida**](https://github.com/michael-franke/aida-package) package:
 
-```{r data, echo=FALSE}
-data <- Titanic %>% as_tibble() %>% rename(Count = n)
-data_agg <- data %>% group_by(Class, Sex, Age) %>% summarize(Total = sum(Count))
+```{r data-import, echo=FALSE}
+data <- aida::data_MT
 
-data <- full_join(data %>% filter(Survived == "Yes") %>% select(-Survived), 
-                  data_agg)
-
-data
+data <- data %>% 
+  mutate(
+    prototype_label = case_when(
+      prototype_label %in% c('curved', 'straight') ~ prototype_label,
+      TRUE ~ 'CoM'
+      ),
+    prototype_label = factor(prototype_label,
+                             levels = c('straight', 'curved', 'CoM')))
 ```
-The data set contains the following variables:
 
-* `Class`: Passenger class
-* `Sex`: Sex of the passenger
-* `Age`: Age group of the passenger
-* `Count`: Count of passengers who survived
-* `Total`: Total number of passengers
+```{r data}
+data %>% 
+  select(RT, group, condition, prototype_label) %>%
+  head()
+```
 
-Below, we regress the counts of passengers who survived as a function of their class, 
-sex, and age group using a Binomial logistic regression model fitted with [**brms**](https://paul-buerkner.github.io/brms/):
+The variables relevant for us are:
+
+* `RT`: Reaction time in milliseconds
+* `group`: Whether a category is selected by click vs touch
+* `condition`: Whether the animal is a typical vs atypical representative of its category
+* `prototype_label`: The type of prototypical movement strategy (straight vs curved vs CoM)
+
+Below, we regress the log-transformed reaction times as a function of factors 
+`group`, `condition`, `prototype_label`, and their three-way interaction using a 
+linear regression model fitted with [**brms**](https://paul-buerkner.github.io/brms/):
 
 ```{r model-fitting, results='hide'}
-fit <- brm(Count | trials(Total) ~ Class + Sex + Age,  
-           data = data, 
-           family = binomial(link = "logit"),
-           seed = 123)
+fit <- brms::brm(formula = log(RT) ~ group * condition * prototype_label,
+                 data = data,
+                 seed = 123
+                 )
 ```
 
-```{r model-summary}
-summary(fit)
-```
-To obtain information on the factors and the encoding scheme used in the model, 
+To obtain information on the factors and the coding scheme used in the model, 
 we can use `get_cell_definitions`:
 
 ```{r cell-defs}
 get_cell_definitions(fit)
 ```
 
-The output reveals that we used dummy coding for factors `Class`, `Sex` and 
-`Age`, where `1st`, `Female`, and `Adult` are the reference levels, respectively.
+The output shows that factors `group`, `condition` and `prototype_label` are
+dummy-coded, with `click`, `Atypical`, and `straight` being the reference levels, respectively.
 
-To obtain posterior draws for a specific design cell, we can use `extract_cell_draws`. 
-For instance, draws for women in the second class can be extracted like so:
+To obtain posterior draws for a specific design cell, we can use `extract_cell_draws`.
+For instance, draws for typical exemplars in click trials, averaged over factor `prototype_label`,
+can be extracted like so:
 
 ```{r cell-draws}
-extract_cell_draws(fit, Sex == "Female" & Class == "2nd" & Age == "Adult")
+extract_cell_draws(fit, condition == "Typical" & group == "click")
 ```
 
-Parameter `colname` allows changing the default column name in the output, which 
-facilitates post-processing of cell draws, e.g., for plotting or summary statistics. 
-Here, we extract the draws for each level of `Class` (averaged over `Sex` and `Age`) 
-and visualize the results:
+Parameter `colname` allows changing the default column name in the output, which
+facilitates post-processing of cell draws, e.g., for plotting or summary statistics.
+Here, we extract the draws for each level of `prototype_label` (averaged over `group` 
+and `condition`) and visualize the results:
 
 ```{r plot, out.width="70%"}
-draws_1st  <- extract_cell_draws(fit, Class == "1st", colname = "1st")
-draws_2nd  <- extract_cell_draws(fit, Class == "2nd", colname = "2nd")
-draws_3rd  <- extract_cell_draws(fit, Class == "3rd", colname = "3rd")
-draws_crew <- extract_cell_draws(fit, Class == "Crew", colname = "Crew")
+draws_straight <- extract_cell_draws(fit, prototype_label == "straight", colname = "straight")
+draws_curved <- extract_cell_draws(fit, prototype_label == "curved", colname = "curved")
+draws_CoM <- extract_cell_draws(fit, prototype_label == "CoM", colname = "CoM")
 
-draws_class <- posterior::bind_draws(draws_1st, draws_2nd, draws_3rd, draws_crew) %>% 
-  pivot_longer(cols = posterior::variables(.), names_to = "class", values_to = "value")
+draws_prototype <- posterior::bind_draws(draws_straight, draws_curved, draws_CoM) %>%
+  pivot_longer(cols = posterior::variables(.), names_to = "prototype", values_to = "value")
 
-draws_class %>% 
-  ggplot(aes(x = value, color = class, fill = class)) +
+draws_prototype %>%
+  ggplot(aes(x = value, color = prototype, fill = prototype)) +
   geom_density(alpha = 0.4)
 ```
 
 Finally, we can compare two subsets of design cells with `compare_groups`. Here,
-we compare the odds of surviving between female passengers in the first class and
-male passengers in all but the first class:
+we compare the estimates for atypical exemplars in click trials against typical 
+exemplars in click trials (averaged over the three prototypical movement strategies):
 
 ```{r group-comp}
-compare_groups(fit, 
-               Sex == "Female" & Class == "1st",
-               Sex == "Male" & Class != "1st"
+compare_groups(fit,
+               higher = condition == "Atypical" & group == "click",
+               lower = condition == "Typical" & group == "click"
                )
 ```
+
 If one of two group specifications is left out, we compare against the grand mean:
 
 ```{r group-comp_grand-mean}
-compare_groups(fit, 
-               Class == "Crew"
+compare_groups(fit,
+               higher = group == "click"
                )
 ```
 
-If the Boolean flag `include_bf` is set to `TRUE` (default is `FALSE`), Bayes Factors for the inequality (higher > lower) are approximated in comparison to the "negated hypothesis" (lower <= higher). However, this requires specifying proper priors for all parameters:
+If the Boolean flag `include_bf` is set to `TRUE` (default is `FALSE`), Bayes Factors 
+for the inequality (higher > lower) are approximated in comparison to the "negated hypothesis" 
+(lower <= higher). However, this requires specifying proper priors for all parameters:
 
-```{r }
-fit_with_priors <- brm(Count | trials(Total) ~ Class + Sex + Age,  
-           data = data, 
-           family = binomial(link = "logit"),
-           prior = prior("normal(0,100)"),
-           seed = 123)
-compare_groups(fit_with_priors, 
-               higher = Class == "3rd" & Sex == "Female" & Age == "Child",
-               lower = Class == "3rd" & Sex == "Female" & Age == "Adult",
+```{r model-fitting-with-priors, results='hide'}
+fit_with_priors <- brms::brm(formula = log(RT) ~ group * condition * prototype_label,
+                             prior = prior(student_t(1, 0, 3), class = "b"),
+                             data = data,
+                             seed = 123
+                             )
+```
+
+```{r group-comp-with-bf}
+compare_groups(fit_with_priors,
+               higher = prototype_label != "straight",
+               lower = prototype_label == "straight",
                include_bf = TRUE
                )
 ```
+
