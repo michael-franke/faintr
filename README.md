@@ -24,6 +24,8 @@ Currently, **faintr** provides the following functions:
 - `get_cell_definitions` returns information on the predictor variables
   and how they are encoded in the model.
 - `extract_cell_draws` returns posterior draws and additional metadata
+  for all design cells.
+- `filter_cell_draws` returns posterior draws and additional metadata
   for one subset of design cells.
 - `compare_groups` returns summary statistics of comparing two subsets
   of design cells.
@@ -115,13 +117,55 @@ The output shows that factors `group`, `condition` and `prototype_label`
 are dummy-coded, with `click`, `Atypical`, and `straight` being the
 reference levels, respectively.
 
-To obtain posterior draws for a specific design cell, we can use
-`extract_cell_draws`. For instance, draws for typical exemplars in click
-trials, averaged over factor `prototype_label`, can be extracted like
-so:
+To extract posterior draws for all design cells, we can use
+`extract_cell_draws`:
 
 ``` r
-extract_cell_draws(fit, condition == "Typical" & group == "click")
+extract_cell_draws(fit)
+#> # A draws_df: 1000 iterations, 4 chains, and 12 variables
+#>    touch:Atypical:straight touch:Typical:straight touch:Atypical:curved
+#> 1                      7.4                    7.2                   7.5
+#> 2                      7.4                    7.2                   7.4
+#> 3                      7.4                    7.2                   7.5
+#> 4                      7.4                    7.1                   7.4
+#> 5                      7.4                    7.2                   7.6
+#> 6                      7.4                    7.2                   7.4
+#> 7                      7.4                    7.2                   7.5
+#> 8                      7.4                    7.2                   7.5
+#> 9                      7.4                    7.2                   7.4
+#> 10                     7.4                    7.2                   7.5
+#>    touch:Typical:CoM touch:Atypical:CoM touch:Typical:curved
+#> 1                7.6                7.6                  7.2
+#> 2                7.5                7.6                  7.1
+#> 3                7.5                7.6                  7.1
+#> 4                7.4                7.7                  7.1
+#> 5                7.5                7.4                  7.1
+#> 6                7.5                7.5                  7.1
+#> 7                7.4                7.7                  7.2
+#> 8                7.4                7.6                  7.1
+#> 9                7.5                7.7                  7.2
+#> 10               7.5                7.6                  7.2
+#>    click:Atypical:straight click:Typical:straight
+#> 1                      7.6                    7.4
+#> 2                      7.6                    7.4
+#> 3                      7.6                    7.4
+#> 4                      7.6                    7.4
+#> 5                      7.6                    7.4
+#> 6                      7.6                    7.4
+#> 7                      7.7                    7.4
+#> 8                      7.7                    7.4
+#> 9                      7.6                    7.4
+#> 10                     7.6                    7.4
+#> # ... with 3990 more draws, and 4 more variables
+#> # ... hidden reserved variables {'.chain', '.iteration', '.draw'}
+```
+
+With `filter_cell_draws` we can obtain posterior draws for a specific
+design cell. For instance, draws for typical exemplars in click trials,
+averaged over factor `prototype_label`, can be extracted like so:
+
+``` r
+filter_cell_draws(fit, condition == "Typical" & group == "click")
 #> # A draws_df: 1000 iterations, 4 chains, and 1 variables
 #>    draws
 #> 1    7.4
@@ -145,9 +189,9 @@ level of `prototype_label` (averaged over `group` and `condition`) and
 visualize the results:
 
 ``` r
-draws_straight <- extract_cell_draws(fit, prototype_label == "straight", colname = "straight")
-draws_curved <- extract_cell_draws(fit, prototype_label == "curved", colname = "curved")
-draws_CoM <- extract_cell_draws(fit, prototype_label == "CoM", colname = "CoM")
+draws_straight <- filter_cell_draws(fit, prototype_label == "straight", colname = "straight")
+draws_curved <- filter_cell_draws(fit, prototype_label == "curved", colname = "curved")
+draws_CoM <- filter_cell_draws(fit, prototype_label == "CoM", colname = "CoM")
 
 draws_prototype <- posterior::bind_draws(draws_straight, draws_curved, draws_CoM) %>%
   pivot_longer(cols = posterior::variables(.), names_to = "prototype", values_to = "value")
@@ -220,5 +264,5 @@ compare_groups(fit_with_priors,
 #> 95% HDI:  [ 0.05464 ; 0.1547 ]
 #> P('higher - lower' > 0):  0.9998 
 #> Posterior odds:  3999 
-#> Bayes factor:  4208
+#> Bayes factor:  4015
 ```

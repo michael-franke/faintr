@@ -54,6 +54,8 @@ Currently, **faintr** provides the following functions:
 * `get_cell_definitions` returns information on the predictor variables and how 
 they are encoded in the model.
 * `extract_cell_draws` returns posterior draws and additional metadata
+for all design cells.
+* `filter_cell_draws` returns posterior draws and additional metadata
 for one subset of design cells.
 * `compare_groups` returns summary statistics of comparing two subsets of design cells.
 
@@ -120,12 +122,18 @@ get_cell_definitions(fit)
 The output shows that factors `group`, `condition` and `prototype_label` are
 dummy-coded, with `click`, `Atypical`, and `straight` being the reference levels, respectively.
 
-To obtain posterior draws for a specific design cell, we can use `extract_cell_draws`.
+To extract posterior draws for all design cells, we can use `extract_cell_draws`:
+
+```{r extract-cell-draws}
+extract_cell_draws(fit)
+```
+
+With `filter_cell_draws` we can obtain posterior draws for a specific design cell.
 For instance, draws for typical exemplars in click trials, averaged over factor `prototype_label`,
 can be extracted like so:
 
-```{r cell-draws}
-extract_cell_draws(fit, condition == "Typical" & group == "click")
+```{r filter-cell-draws}
+filter_cell_draws(fit, condition == "Typical" & group == "click")
 ```
 
 Parameter `colname` allows changing the default column name in the output, which
@@ -134,9 +142,9 @@ Here, we extract the draws for each level of `prototype_label` (averaged over `g
 and `condition`) and visualize the results:
 
 ```{r plot, out.width="70%"}
-draws_straight <- extract_cell_draws(fit, prototype_label == "straight", colname = "straight")
-draws_curved <- extract_cell_draws(fit, prototype_label == "curved", colname = "curved")
-draws_CoM <- extract_cell_draws(fit, prototype_label == "CoM", colname = "CoM")
+draws_straight <- filter_cell_draws(fit, prototype_label == "straight", colname = "straight")
+draws_curved <- filter_cell_draws(fit, prototype_label == "curved", colname = "curved")
+draws_CoM <- filter_cell_draws(fit, prototype_label == "CoM", colname = "CoM")
 
 draws_prototype <- posterior::bind_draws(draws_straight, draws_curved, draws_CoM) %>%
   pivot_longer(cols = posterior::variables(.), names_to = "prototype", values_to = "value")
@@ -159,7 +167,7 @@ compare_groups(fit,
 
 If one of two group specifications is left out, we compare against the grand mean:
 
-```{r group-comp_grand-mean}
+```{r group-comp-grand-mean}
 compare_groups(fit,
                higher = group == "click"
                )
