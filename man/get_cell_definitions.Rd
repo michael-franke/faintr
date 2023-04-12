@@ -28,8 +28,8 @@ is a population-level parameter (class \code{b}), as is the case when using the
 }
 \examples{
 \dontrun{
-# fit a linear mixed effects model using 'brms'
-# regressing voice pitch against gender and context and including random effects
+# fit a linear mixed effects model on data from a 2 x 2 factorial design
+## regress voice pitch against gender and context
 fit <- brms::brm(formula = pitch ~ gender * context + (1 | subject + sentence),
                  data = politeness)
 

@@ -24,8 +24,8 @@
 #'
 #' @examples
 #' \dontrun{
-#' # fit a linear mixed effects model using 'brms'
-#' # regressing voice pitch against gender and context and including random effects
+#' # fit a linear mixed effects model on data from a 2 x 2 factorial design
+#' ## regress voice pitch against gender and context
 #' fit <- brms::brm(formula = pitch ~ gender * context + (1 | subject + sentence),
 #'                  data = politeness)
 #'
@@ -57,20 +57,15 @@ get_cell_definitions <- function(fit) {
 }
 
 
-#' Extract posterior draws for one subset of factorial design cells
+#' Extract posterior draws for all factorial design cells
 #'
-#' This function takes as input a \code{\link[brms]{brms}} model fit for a
-#' factorial design and a group specification (one subset of the design cells)
-#' and returns the posterior draws for that group. If no group is specified,
-#' the returned draws are grand means.
+#' This function takes as input a \code{\link[brms]{brms}} model fit for a factorial
+#' design and returns posterior draws for each factor level combination.
 #'
 #' @param fit An object of class \code{\link[brms]{brmsfit}}.
-#' @param group An expression specifying the group to filter the draws for.
-#' @param colname A string specifying the column name of the returned data frame;
-#' defaults to 'draws'.
 #'
 #' @return A \code{\link[posterior]{draws_df}} object containing posterior draws
-#' for the specified group, as well as additional metadata.
+#' and additional metadata.
 #'
 #' @note
 #' The \pkg{faintr} package currently does not support multivariate models and
@@ -88,30 +83,17 @@ get_cell_definitions <- function(fit) {
 #'
 #' @examples
 #' \dontrun{
-#' # fit a linear mixed effects model
-#' # regressing voice pitch against gender and context and including random effects
+#' # fit a linear mixed effects model on data from a 2 x 2 factorial design
+#' ## regress voice pitch against gender and context
 #' fit <- brms::brm(formula = pitch ~ gender * context + (1 | subject + sentence),
 #'                  data = politeness)
 #'
-#' # extract draws for female speakers in informal contexts
-#' extract_cell_draws(fit, gender == "F" & context == "inf")
-#'
-#' # extract draws for male speakers or informal contexts
-#' extract_cell_draws(fit, gender == "M" | context == "inf")
-#'
-#' # averaged over gender, extract draws for all but polite contexts
-#' extract_cell_draws(fit, context != "pol")
-#'
-#' # extract posterior draws averaged over all factors (grand mean)
+#' # extract draws for all four factor cells
 #' extract_cell_draws(fit)
 #' }
 #'
-#' @importFrom rlang .data
-#'
 #' @export
-extract_cell_draws <- function(fit, group=NULL, colname='draws') {
-
-  ## extract draws for each design cell ----
+extract_cell_draws <- function(fit) {
 
   # get minimal design matrix as tibble with row numbers in column
   design_matrix <- get_cell_definitions(fit)
@@ -126,14 +108,13 @@ extract_cell_draws <- function(fit, group=NULL, colname='draws') {
   draws <- posterior::as_draws_df(fit, variable = coeff_names)
 
   # store meta information
-  .chain     <- draws$.chain
-  .iteration <- draws$.iteration
-  .draw      <- draws$.draw
+  meta_info <- data.frame(.chain = draws$.chain, .draw = draws$.draw, .iteration = draws$.iteration)
 
   # re-extract minimal design matrix as matrix
   X <- design_matrix %>%
-    dplyr::select(!dplyr::all_of(c(fixef,'cell'))) %>%
-    as.matrix()
+    tibble::column_to_rownames(var = "cell") %>%
+    dplyr::select(!dplyr::all_of(fixef)) %>%
+    as.matrix(rownames.force = TRUE)
 
   # extract relevant draws as matrix
   Y <- tibble::as_tibble(draws) %>%
@@ -143,7 +124,82 @@ extract_cell_draws <- function(fit, group=NULL, colname='draws') {
   # use matrix product to get draws for each cell
   draws_for_cells <- Y %*% t(X)
 
-  ## extract draws for factor level combinations ----
+  # attach meta information
+  out <- draws_for_cells %>%
+    as.data.frame() %>%
+    dplyr::bind_cols(meta_info)
+
+  # add intelligible column names
+  colnames(out)[match(design_matrix$cell, colnames(out))] <- do.call(paste, c(design_matrix[fixef], sep = ":"))
+
+  # return draws in 'draws_df' format
+  return(posterior::as_draws_df(out))
+}
+
+
+#' Get posterior draws for one subset of factorial design cells
+#'
+#' This function takes as input a \code{\link[brms]{brms}} model fit for a
+#' factorial design and a group specification (one subset of the design cells)
+#' and returns the posterior draws for that group. If no group is specified,
+#' the returned draws are grand means.
+#'
+#' @param fit An object of class \code{\link[brms]{brmsfit}}.
+#' @param group An expression specifying the group to filter the draws for.
+#' @param colname A string specifying the column name of the returned data frame;
+#' defaults to 'draws'.
+#'
+#' @return A \code{\link[posterior]{draws_df}} object containing posterior draws
+#' for the specified group and additional metadata.
+#'
+#' @note
+#' The \pkg{faintr} package currently does not support multivariate models and
+#' models that use families \code{categorical}, \code{dirichlet}, \code{multinomial},
+#' and \code{logistic_normal}. Furthermore, models must not include special effect
+#' terms \code{mo()}, \code{mi()}, \code{me()}, and \code{cs()} for fixed effects.
+#' Also note that \pkg{faintr} currently does not support models where the intercept
+#' is a population-level parameter (class \code{b}), as is the case when using the
+#' \code{0 + Intercept} syntax in the \code{brm} function call.
+#'
+#' @references
+#' Bürkner, P.-C. (2017). brms: An R Package for Bayesian Multilevel Models
+#' Using Stan. \emph{Journal of Statistical Software}, \emph{80}(1), 1-28.
+#' \doi{10.18637/jss.v080.i01}
+#'
+#' @examples
+#' \dontrun{
+#' # fit a linear mixed effects model on data from a 2 x 2 factorial design
+#' ## regress voice pitch against gender and context
+#' fit <- brms::brm(formula = pitch ~ gender * context + (1 | subject + sentence),
+#'                  data = politeness)
+#'
+#' # get the draws for female speakers in informal contexts
+#' filter_cell_draws(fit, gender == "F" & context == "inf")
+#'
+#' # get the draws for male speakers or informal contexts
+#' filter_cell_draws(fit, gender == "M" | context == "inf")
+#'
+#' # averaged over gender, get the draws for all but polite contexts
+#' filter_cell_draws(fit, context != "pol")
+#'
+#' # get the posterior draws averaged over all factors (grand mean)
+#' filter_cell_draws(fit)
+#' }
+#'
+#' @importFrom rlang .data `:=`
+#'
+#' @export
+filter_cell_draws <- function(fit, group=NULL, colname="draws") {
+
+  ## extract draws for each design cell ----
+
+  # get minimal design matrix as tibble with row numbers in column
+  design_matrix <- get_cell_definitions(fit)
+
+  # get draws for each cell
+  draws_for_cells <- extract_cell_draws(fit)
+
+  ## filter the draws ----
 
   group_spec <- rlang::enquo(group)
 
@@ -157,24 +213,29 @@ extract_cell_draws <- function(fit, group=NULL, colname='draws') {
       dplyr::pull()
   }
 
-  if (length(cell_numbers) == 1) {
-    out <- draws_for_cells[,cell_numbers] %>% as.data.frame()
-  } else if (length(cell_numbers) > 1) {
-    out <- draws_for_cells[,cell_numbers] %>% rowMeans() %>% as.data.frame()
+  # get names of relevant columns
+  relevant_columns <- posterior::variables(draws_for_cells)[cell_numbers]
+
+  if (length(relevant_columns) == 1) {
+
+    out <- draws_for_cells %>%
+      posterior::subset_draws(variable = relevant_columns)
+
+    posterior::variables(out) <- colname
+
+  } else if (length(relevant_columns) > 1) {
+
+    out <- draws_for_cells %>%
+      posterior::subset_draws(variable = relevant_columns) %>%
+      posterior::mutate_variables(!!colname := suppressWarnings(rowMeans(draws_for_cells[relevant_columns]))) %>%
+      posterior::subset_draws(variable = colname)
+
   } else {
+
     stop("Level specification '", rlang::quo_get_expr(group_spec) %>% deparse(), "' unknown.")
   }
 
-  # add column name
-  colnames(out) <- colname
-
-  # attach meta information
-  out[c(".chain", ".iteration", ".draw")] <- c(.chain, .iteration, .draw)
-
-  # convert to 'draws_df'
-  out <- posterior::as_draws_df(out)
-
-  out
+  return(out)
 }
 
 
@@ -216,8 +277,8 @@ extract_cell_draws <- function(fit, group=NULL, colname='draws') {
 #'
 #' @examples
 #' \dontrun{
-#' # fit a linear mixed effects model
-#' # regressing voice pitch against gender and context and including random effects
+#' # fit a linear mixed effects model on data from a 2 x 2 factorial design
+#' ## regress voice pitch against gender and context
 #' fit <- brms::brm(formula = pitch ~ gender * context + (1 | subject + sentence),
 #'                  data = politeness)
 #'
@@ -254,9 +315,9 @@ compare_groups <- function(fit, higher=NULL, lower=NULL, hdi=0.95, include_bf=FA
   higher <- rlang::enquo(higher)
   lower  <- rlang::enquo(lower)
 
-  # extract cell draws for both group specifications
-  post_samples_higher <- extract_cell_draws(fit = fit, !!higher)
-  post_samples_lower  <- extract_cell_draws(fit = fit, !!lower)
+  # get cell draws for both group specifications
+  post_samples_higher <- filter_cell_draws(fit = fit, group = !!higher)
+  post_samples_lower  <- filter_cell_draws(fit = fit, group = !!lower)
 
   # get names of group specification
   get_group_names <- function(group){
@@ -284,8 +345,8 @@ compare_groups <- function(fit, higher=NULL, lower=NULL, hdi=0.95, include_bf=FA
         sample_prior = "only"
       ))
 
-    prior_samples_higher <- extract_cell_draws(fit = fit_prior_only, !!higher)
-    prior_samples_lower  <- extract_cell_draws(fit = fit_prior_only, !!lower)
+    prior_samples_higher <- filter_cell_draws(fit = fit_prior_only, group = !!higher)
+    prior_samples_lower  <- filter_cell_draws(fit = fit_prior_only, group = !!lower)
 
     prior_prob <- mean(prior_samples_higher$draws > prior_samples_lower$draws)
     prior_odds <- prior_prob / (1 - prior_prob)

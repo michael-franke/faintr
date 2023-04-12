@@ -4,7 +4,7 @@ suppressWarnings(suppressMessages({
   library(magrittr)
 }))
 
-test_that("get_cell_definitions() throws expected errors", {
+test_that("compare_groups() throws expected errors", {
   fit <- readRDS(test_path('models/fit_gaussian_dummy.rds'))
 
   expect_error(compare_groups(fit, hdi = '0.89'), "Argument 'hdi' must be a single value between 0 and 1.")
@@ -18,7 +18,7 @@ test_that("get_cell_definitions() throws expected errors", {
 })
 
 
-test_that("get_cell_definitions() returns correct output", {
+test_that("compare_groups() returns correct output", {
   fit <- readRDS(test_path('models/fit_gaussian_dummy.rds'))
 
   expect_equal(inherits(compare_groups(fit), "faintCompare"), TRUE)
