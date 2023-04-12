@@ -95,8 +95,8 @@ Using Stan. <em>Journal of Statistical Software</em>, <em>80</em>(1), 1-28.
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
-<span class="r-in"><span><span class="co"># fit a linear mixed effects model using 'brms'</span></span></span>
-<span class="r-in"><span><span class="co"># regressing voice pitch against gender and context and including random effects</span></span></span>
+<span class="r-in"><span><span class="co"># fit a linear mixed effects model on data from a 2 x 2 factorial design</span></span></span>
+<span class="r-in"><span><span class="co">## regress voice pitch against gender and context</span></span></span>
 <span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">brms</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/brms/man/brm.html" class="external-link">brm</a></span><span class="op">(</span>formula <span class="op">=</span> <span class="va">pitch</span> <span class="op">~</span> <span class="va">gender</span> <span class="op">*</span> <span class="va">context</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">subject</span> <span class="op">+</span> <span class="va">sentence</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>                 data <span class="op">=</span> <span class="va">politeness</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
