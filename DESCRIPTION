@@ -1,6 +1,6 @@
 Package: faintr
 Title: Factor Interpreter for Bayesian Regression Models
-Version: 0.0.0.9002
+Version: 0.0.0.9010
 Authors@R: c(
     person("Özge", "Özenoglu", , "oezgeoezenoglu@gmail.com", role = "aut"),
     person("Noa", "Kallioinen", , "noa.kallioinen@aalto.fi", role = "aut"),
